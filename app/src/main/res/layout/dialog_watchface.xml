@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="5dip"
+    android:paddingEnd="5dip">
+    <EditText
+        android:visibility="gone"
+        android:id="@+id/watchface_uuid"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/watchface_uuid"/>
+    <EditText
+        android:id="@+id/watchface_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/watchface_name"/>
+</LinearLayout>
