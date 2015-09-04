@@ -19,15 +19,17 @@ package au.com.wallaceit.pebblewatchfacescheduler;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
 import android.text.ClipboardManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,11 +38,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.IconTextView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.NumberPicker;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
@@ -53,6 +59,7 @@ import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.components.io.fileselectors.FileInfo;
 import org.codehaus.plexus.components.io.fileselectors.FileSelector;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,32 +70,49 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainActivity extends Activity {
-    public Manager manager;
+    private Manager manager;
+    private SharedPreferences prefs;
     private WatchfacesAdapter watchfacesAdapter;
     private ScheduleAdapter scheduleAdapter;
+    NumberPicker autoSelect;
+    Spinner autoSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         manager = new Manager(MainActivity.this);
+
         // setup views
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
-        SimpleTabsAdapter pageAdapter = new SimpleTabsAdapter(new String[]{"Schedule", "Watchfaces"}, new int[]{R.id.schedule_listview, R.id.watchface_listview}, MainActivity.this, null);
+        SimpleTabsAdapter pageAdapter = new SimpleTabsAdapter(new String[]{"Watchfaces","Schedule"}, new int[]{R.id.watchface_view, R.id.schedule_listview}, MainActivity.this, null);
         viewPager.setAdapter(pageAdapter);
         LinearLayout tabLayout = (LinearLayout) findViewById(R.id.tab_widget);
         SimpleTabsWidget tabsIndicator = new SimpleTabsWidget(MainActivity.this, tabLayout);
         tabsIndicator.setViewPager(viewPager);
         tabsIndicator.setTextColor(Color.BLACK);
+        tabsIndicator.setBackgroundColor(Color.parseColor("#42BAD8"));
+        tabsIndicator.setInidicatorColor(Color.parseColor("#FF815D"));
 
         final ListView watchfaceList = (ListView) findViewById(R.id.watchface_listview);
         watchfacesAdapter = new WatchfacesAdapter(MainActivity.this);
@@ -117,7 +141,7 @@ public class MainActivity extends Activity {
                                 return;
                             }
                             if (!Pattern.matches("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}", uuid.getText())) {
-                                Toast.makeText(MainActivity.this, "Please enter a valid UUID", Toast.LENGTH_LONG).show();;
+                                Toast.makeText(MainActivity.this, "Please enter a valid UUID", Toast.LENGTH_LONG).show();
                                 return;
                             }
                             manager.setUuid(uuid.getText().toString(), name.getText().toString());
@@ -175,27 +199,27 @@ public class MainActivity extends Activity {
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Add schedule").setView(layout)
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                dialogInterface.dismiss();
-                            }
-                        }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                Date date = new Date();
-                                date.setHours(timeselect.getCurrentHour());
-                                date.setMinutes(timeselect.getCurrentMinute());
-                                date.setSeconds(0);
-                                JSONObject watchface = (JSONObject) watchselect.getSelectedItem();
-                                try {
-                                    manager.setScheduleItem(String.valueOf(System.currentTimeMillis()), watchface.getString("uuid"), date.getTime());
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.dismiss();
                                 }
-                                dialogInterface.dismiss();
-                                scheduleAdapter.refreshSchedule();
+                            }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            Date date = new Date();
+                            date.setHours(timeselect.getCurrentHour());
+                            date.setMinutes(timeselect.getCurrentMinute());
+                            date.setSeconds(0);
+                            JSONObject watchface = (JSONObject) watchselect.getSelectedItem();
+                            try {
+                                manager.setScheduleItem(String.valueOf(System.currentTimeMillis()), watchface.getString("uuid"), date.getTime());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
+                            dialogInterface.dismiss();
+                            scheduleAdapter.refreshSchedule();
+                        }
                     }).show();
                 } else {
                     JSONObject scheduleObj = scheduleAdapter.getItem(position);
@@ -204,10 +228,87 @@ public class MainActivity extends Activity {
             }
         });
 
+        // setup auto rotation UI
+        CheckBox cb = (CheckBox) findViewById(R.id.auto_enabled);
+        try {
+            cb.setChecked(manager.getAutoSchedule().getBoolean("enabled"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                manager.setAutoScheduleEnabled(isChecked);
+            }
+        });
+
+        autoSelect = (NumberPicker) findViewById(R.id.auto_increment);
+        autoSelect.setMinValue(1);
+        autoSelect.setMaxValue(99);
+        autoSelect.setValue(prefs.getInt("autoScheduleQty", 1));
+        autoSelect.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            Timer timer = new Timer();
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                timer.cancel();
+                timer.purge();
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        saveAutoInterval();
+                    }
+                }, 1000);
+            }
+        });
+
+        autoSpinner = (Spinner) findViewById(R.id.auto_unit);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.time_units, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        autoSpinner.setAdapter(adapter);
+        autoSpinner.setSelection(Arrays.asList(getResources().getStringArray(R.array.time_units)).indexOf(prefs.getString("autoScheduleUnits", "Hours")), false);
+        autoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                saveAutoInterval();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
         // check for file import
         if (getIntent().getAction().equals("android.intent.action.VIEW") && getIntent().getData()!=null){
             doUUIDImport();
         }
+    }
+
+    private void saveAutoInterval(){
+        SharedPreferences.Editor editor = prefs.edit();
+        int number = autoSelect.getValue();
+        String unit = (String) autoSpinner.getSelectedItem();
+        // save prefs
+        editor.putInt("autoScheduleQty", number);
+        editor.putString("autoScheduleUnits", unit);
+        editor.apply();
+        // works out millis and set timer
+        int unitmillis = 60000;
+        switch (unit){
+            case "Day":
+                unitmillis = 86400000;
+                break;
+            case "Hours":
+                unitmillis = 3600000;
+                break;
+            case "Minutes":
+                unitmillis = 60000;
+                break;
+            case "Seconds":
+                unitmillis = 1000;
+                break;
+        }
+        long interval = number*unitmillis;
+        manager.setAutoScheduleInterval(interval);
     }
 
     class WatchfaceSpinnerAdapter implements SpinnerAdapter {
@@ -385,7 +486,7 @@ public class MainActivity extends Activity {
             File destarchive = new File(this.getCacheDir(), "pebble.log.gz");
             FileOutputStream f = new FileOutputStream(destarchive);
             byte[] buffer = new byte[1024];
-            int len1 = 0;
+            int len1;
             while ((len1 = is.read(buffer)) > 0) {
                 f.write(buffer, 0, len1);
             }
@@ -460,7 +561,7 @@ public class MainActivity extends Activity {
     public static String convertStreamToString(InputStream is) throws Exception {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder sb = new StringBuilder();
-        String line = null;
+        String line;
         while ((line = reader.readLine()) != null) {
             sb.append(line).append("\n");
         }
@@ -479,32 +580,49 @@ public class MainActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        //getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                this.finish();
+                break;
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
+        return true;
     }
 
     class WatchfacesAdapter extends BaseAdapter {
         private LayoutInflater inflater;
         private ArrayList<JSONObject> watchfaceList;
+        private ArrayList<String> autoUuids;
 
         public WatchfacesAdapter(Context context) {
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             refreshWatchfaces();
+            // get watchfaces enabled for auto rotation
+            try {
+                JSONArray uuids = manager.getAutoSchedule().getJSONArray("uuids");
+                autoUuids = new ArrayList<>();
+                for (int i=0; i<uuids.length(); i++) {
+                    autoUuids.add(uuids.getString(i));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void saveAutoUuids(){
+            JSONArray json = new JSONArray();
+            for (int i=0; i<autoUuids.size(); i++) {
+                json.put(autoUuids.get(i));
+            }
+            manager.setAutoScheduleUuids(json);
         }
 
         public void refreshWatchfaces() {
@@ -532,12 +650,13 @@ public class MainActivity extends Activity {
                 viewHolder = new ViewHolder();
                 if (position == 0) {
                     convertView = inflater.inflate(R.layout.listitem_add, parent, false);
+                    ((TextView) convertView.findViewById(R.id.add_text)).setText("Add Watchface");
                 } else {
-                    Log.w("SGSER", "Inflating view");
                     convertView = inflater.inflate(R.layout.watchface_list_row, parent, false);
                     viewHolder.name = (TextView) convertView.findViewById(R.id.watchface_name);
                     viewHolder.deleteIcon = (IconTextView) convertView.findViewById(R.id.watchface_delete_btn);
                     viewHolder.editIcon = (IconTextView) convertView.findViewById(R.id.watchface_edit_btn);
+                    viewHolder.autoCb = (CheckBox) convertView.findViewById(R.id.auto_watchface_enabled);
                 }
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
@@ -578,7 +697,7 @@ public class MainActivity extends Activity {
                                 }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                if (name.getText().toString().equals("")){
+                                if (name.getText().toString().equals("")) {
                                     Toast.makeText(MainActivity.this, "Please enter a name for the watchface", Toast.LENGTH_LONG).show();
                                     return;
                                 }
@@ -587,6 +706,23 @@ public class MainActivity extends Activity {
                                 watchfacesAdapter.refreshWatchfaces();
                             }
                         }).show();
+                    }
+                });
+                viewHolder.autoCb.setOnCheckedChangeListener(null);
+                viewHolder.autoCb.setChecked(autoUuids.contains(uuid));
+                viewHolder.autoCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if (isChecked){
+                            if (!autoUuids.contains(uuid))
+                                autoUuids.add(uuid);
+                            Log.w(getPackageName(), "Adding "+uuid+" from auto rotate");
+                        } else {
+                            autoUuids.remove(uuid);
+                            Log.w(getPackageName(), "Removing " + uuid + " from auto rotate");
+                        }
+
+                        saveAutoUuids();
                     }
                 });
             }
@@ -623,6 +759,7 @@ public class MainActivity extends Activity {
         }
 
         class ViewHolder {
+            CheckBox autoCb;
             TextView name;
             IconTextView deleteIcon;
             IconTextView editIcon;
@@ -644,7 +781,7 @@ public class MainActivity extends Activity {
                 @Override
                 public int compare(JSONObject s, JSONObject t1) {
                     try {
-                        return s.getLong("time")>t1.getLong("time")?1:0;
+                        return (int) (s.getLong("time")-t1.getLong("time"));
                     } catch (JSONException e) {
                         e.printStackTrace();
                         return 0;
@@ -663,6 +800,7 @@ public class MainActivity extends Activity {
                 viewHolder = new ViewHolder();
                 if (position == 0) {
                     convertView = inflater.inflate(R.layout.listitem_add, parent, false);
+                    ((TextView) convertView.findViewById(R.id.add_text)).setText("Add To Schedule");
                 } else {
                     convertView = inflater.inflate(R.layout.schedule_list_row, parent, false);
                     viewHolder.name = (TextView) convertView.findViewById(R.id.schedule_watchface_name);
@@ -675,15 +813,15 @@ public class MainActivity extends Activity {
             }
             if (position > 0) {
                 final JSONObject scheduleObj = getItem(position);
-                String displayName = "Unknown";
-                final String key, uuid, displayTime;
+                final String key, uuid, displayTime, displayName;
                 final Long time;
                 try {
                     key = scheduleObj.getString("key");
                     uuid = scheduleObj.getString("uuid");
                     time = scheduleObj.getLong("time");
                     Date date = new Date(time);
-                    displayTime = date.getHours()+":"+date.getMinutes();
+                    SimpleDateFormat sdf = new SimpleDateFormat("hh:mma", Locale.ENGLISH);
+                    displayTime = sdf.format(date);
                     displayName = manager.getUuids().getJSONObject(uuid).getString("name");
                 } catch (JSONException e) {
                     e.printStackTrace();

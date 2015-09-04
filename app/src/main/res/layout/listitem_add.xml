@@ -8,7 +8,7 @@
 	android:orientation="horizontal"
 	android:gravity="center_horizontal|center_vertical">
 	<IconTextView
-		android:id="@+id/multi_edit_btn"
+		android:id="@+id/edit_btn"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:contentDescription="@string/edit"
@@ -20,8 +20,9 @@
 		android:layout_marginRight="8dp"
 		android:layout_marginEnd="8dp"
 		android:textSize="32sp"
-		android:textColor="#25C48F"/>
+		android:textColor="#42BAD8"/>
 	<TextView
+		android:id="@+id/add_text"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:textAppearance="@android:style/TextAppearance.Large"

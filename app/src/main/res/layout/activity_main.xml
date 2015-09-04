@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:windowSoftInputMode="stateHidden"
     android:orientation="vertical"
     android:id="@+id/redditview"
     android:layout_width="fill_parent"
@@ -15,17 +16,60 @@
         android:layout_height="fill_parent"
         android:layout_below="@+id/tab_widget">
 
+        <LinearLayout
+            android:id="@+id/watchface_view"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_margin="8dip">
+                <TextView
+                    android:id="@+id/auto_title"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="@string/auto_rotate"/>
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <!-- Dummy item to prevent AutoCompleteTextView from receiving focus -->
+                    <LinearLayout
+                        android:focusable="true" android:focusableInTouchMode="true"
+                        android:layout_width="0px" android:layout_height="0px"/>
+                    <TextView
+                        android:id="@+id/auto_enabled_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/enabled"/>
+                    <CheckBox
+                        android:id="@+id/auto_enabled"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                    <NumberPicker
+                        android:id="@+id/auto_increment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dip"/>
+                    <Spinner
+                        android:id="@+id/auto_unit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+            </LinearLayout>
+            <ListView
+                android:id="@+id/watchface_listview"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
+        </LinearLayout>
+
         <ListView
             android:id="@+id/schedule_listview"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:background="#FFF"/>
-
-        <ListView
-            android:id="@+id/watchface_listview"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:background="#FFF"/>
+            android:layout_height="fill_parent" />
 
     </android.support.v4.view.ViewPager>
 </RelativeLayout>

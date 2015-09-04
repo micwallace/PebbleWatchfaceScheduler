@@ -49,7 +49,7 @@
             android:paddingLeft="4dp"
             android:paddingRight="4dp"
             android:textSize="32sp"
-            android:textColor="#25C48F" />
+            android:textColor="#42BAD8" />
 
         <IconTextView
             android:id="@+id/schedule_delete_btn"

@@ -25,6 +25,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,6 +37,7 @@ public class Manager {
     SharedPreferences preferences;
     JSONObject uuids;
     JSONObject schedule;
+    JSONObject autoSchedule;
 
     public Manager(Context context){
         this.context = context;
@@ -43,11 +45,13 @@ public class Manager {
         try {
             uuids = new JSONObject(preferences.getString("uuids", "{}"));
             schedule = new JSONObject(preferences.getString("schedule", "{}"));
+            autoSchedule = new JSONObject(preferences.getString("autoSchedule", "{\"enabled\":false,\"interval\":86400000,\"uuids\":[],\"curindex\":0}"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
+    // APP/UUID list functions
     public JSONObject getUuids(){
         return uuids;
     }
@@ -102,6 +106,7 @@ public class Manager {
         saveUuids();
     }
 
+    // Scheduling functions
     public JSONObject getSchedule(){
         return schedule;
     }
@@ -141,7 +146,7 @@ public class Manager {
         cancelAlarmIntent(key);
     }
 
-    public void rescheduleAlarm(String key){
+    public void rescheduleAlarm(String key) {
         // reset the alarm for the next day
         try {
             JSONObject scheduleObj = schedule.getJSONObject(key);
@@ -158,6 +163,64 @@ public class Manager {
         }
     }
 
+    // auto scheduling functions
+    public JSONObject getAutoSchedule(){
+        return autoSchedule;
+    }
+
+    public void setAutoScheduleEnabled(boolean enabled){
+        try {
+            autoSchedule.put("enabled", enabled);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if (enabled){
+            scheduleAutoAlarmIntent();
+        } else {
+            cancelAlarmIntent("0");
+        }
+        saveAutoSchedule();
+    }
+
+    public void setAutoScheduleInterval(Long interval){
+        try {
+            autoSchedule.put("interval", interval);
+            if (autoSchedule.getBoolean("enabled"))
+                scheduleAutoAlarmIntent();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        saveAutoSchedule();
+    }
+
+    public void setAutoScheduleUuids(JSONArray array){
+        try {
+            autoSchedule.put("uuids", array);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        saveAutoSchedule();
+    }
+
+    public void setAutoScheduleCurrentIndex(int index){
+        try {
+            autoSchedule.put("curindex", index);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        saveAutoSchedule();
+    }
+
+    public void scheduleAutoAlarmIntent(){
+        Long time = System.currentTimeMillis();
+        try {
+            time += autoSchedule.getLong("interval");
+            scheduleAlarmIntent("0", "0", time);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void cancelAlarmIntent(String key){
         Intent alarmIntent = new Intent(context, ScheduleReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, Long.valueOf(key).intValue(), alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -165,8 +228,8 @@ public class Manager {
         alarmManager.cancel(pendingIntent);
     }
 
-    private void scheduleAlarmIntent(String key, String uuid, Long millis){
-        Log.w("au.com.wallaceit", "Scheduling alarm");
+    public void scheduleAlarmIntent(String key, String uuid, Long millis){
+        Log.w("au.com.wallaceit", "Scheduling alarm: "+key);
         Intent alarmIntent = new Intent(context, ScheduleReceiver.class);
         alarmIntent.putExtra("uuid", uuid);
         alarmIntent.putExtra("key", key);
@@ -181,5 +244,9 @@ public class Manager {
 
     private void saveSchedule(){
         preferences.edit().putString("schedule", schedule.toString()).apply();
+    }
+
+    private void saveAutoSchedule(){
+        preferences.edit().putString("autoSchedule", autoSchedule.toString()).apply();
     }
 }

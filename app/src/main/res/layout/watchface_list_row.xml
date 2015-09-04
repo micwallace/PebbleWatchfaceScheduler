@@ -3,20 +3,23 @@
     android:layout_width="fill_parent"
     android:layout_height="50dp" >
 
-    <TextView
-        android:id="@+id/watchface_name"
+    <LinearLayout
+        android:id="@+id/auto_prefs"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp"
-        android:gravity="center_vertical"
-        android:textSize="19sp" />
+        android:orientation="horizontal"
+        android:gravity="center|start">
+        <CheckBox
+            android:id="@+id/auto_watchface_enabled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:focusable="false" />
+    </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/edit_prefs"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_alignParentRight="true"
@@ -37,7 +40,7 @@
             android:paddingLeft="4dp"
             android:paddingRight="4dp"
             android:textSize="32sp"
-            android:textColor="#25C48F" />
+            android:textColor="#42BAD8" />
 
         <IconTextView
             android:id="@+id/watchface_delete_btn"
@@ -56,4 +59,19 @@
             android:textSize="32sp"
             android:textColor="#ff8c8c8c" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/watchface_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@id/auto_prefs"
+        android:layout_toEndOf="@id/auto_prefs"
+        android:layout_toLeftOf="@id/edit_prefs"
+        android:layout_toStartOf="@id/edit_prefs"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:gravity="center_vertical"
+        android:textSize="19sp" />
 </RelativeLayout>

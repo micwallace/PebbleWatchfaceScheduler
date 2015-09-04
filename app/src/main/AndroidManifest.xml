@@ -3,10 +3,11 @@
     package="au.com.wallaceit.pebblewatchfacescheduler" >
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/icon"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
@@ -18,11 +19,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter android:label="Import App UUIDs" >
-                <data android:scheme="*" android:host="*" />
+                <data
+                    android:host="*"
+                    android:scheme="*" />
                 <data android:mimeType="*/*" />
                 <data android:pathPattern="/.*\\..*\\.gz" />
                 <data android:pathPattern="/.*\\..*\\..*\\.gz" />
+
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
@@ -32,6 +37,14 @@
             android:name=".ScheduleReceiver"
             android:enabled="true"
             android:exported="true" >
+        </receiver>
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
         </receiver>
     </application>
 

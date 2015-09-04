@@ -24,6 +24,10 @@ import android.util.Log;
 
 import com.getpebble.android.kit.PebbleKit;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.UUID;
 
 public class ScheduleReceiver extends BroadcastReceiver {
@@ -32,11 +36,34 @@ public class ScheduleReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.w("au.com.wallaceit", "Intent received, switching watchface");
-        // open watchface
-        PebbleKit.startAppOnPebble(context, UUID.fromString(intent.getStringExtra("uuid")));
-        // reschedule
+
+        String alarmKey = intent.getStringExtra("key");
         Manager manager = new Manager(context);
-        manager.rescheduleAlarm(intent.getStringExtra("key"));
+        String uuid = null;
+        if (alarmKey.equals("0")){
+            Log.w("au.com.wallaceit", "Intent received for autorotate, switching watchface");
+            JSONObject autoSchedule = manager.getAutoSchedule();
+            try {
+                // move to the next watchface or go back to the first if at the end
+                int index = autoSchedule.getInt("curindex")+1;
+                JSONArray uuids = autoSchedule.getJSONArray("uuids");
+                if (index>=uuids.length())
+                    index = 0;
+                uuid = uuids.getString(index);
+                manager.setAutoScheduleCurrentIndex(index);
+                // reschedule for the next interval
+                manager.scheduleAutoAlarmIntent();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.w("au.com.wallaceit", "Intent received for schedule change, switching watchface");
+            uuid = intent.getStringExtra("uuid");
+            // reschedule
+            manager.rescheduleAlarm(intent.getStringExtra("key"));
+        }
+        // open watchface
+        if (uuid!=null)
+            PebbleKit.startAppOnPebble(context, UUID.fromString(uuid));
     }
 }
