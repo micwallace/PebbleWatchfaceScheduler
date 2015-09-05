@@ -16,6 +16,7 @@
     <string name="watchface_uuid">App UUID</string>
     <string name="auto_rotate">Auto Rotate</string>
     <string name="enabled">Enabled</string>
+    <string name="sort">Sort</string>
     <string-array name="time_units">
         <item>Minutes</item>
         <item>Hours</item>

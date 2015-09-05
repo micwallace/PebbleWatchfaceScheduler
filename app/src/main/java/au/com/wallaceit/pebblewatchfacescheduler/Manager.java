@@ -211,6 +211,20 @@ public class Manager {
         saveAutoSchedule();
     }
 
+    public int getAutoScheduleUuidIndex(String uuid){
+        ArrayList<String> index = new ArrayList<>();
+        try {
+            JSONArray uuids = autoSchedule.getJSONArray("uuids");
+            for (int i = 0; i<uuids.length(); i++){
+                index.add(uuids.getString(i));
+            }
+            return index.indexOf(uuid);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
     public void scheduleAutoAlarmIntent(){
         Long time = System.currentTimeMillis();
         try {

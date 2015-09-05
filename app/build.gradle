@@ -29,4 +29,5 @@ dependencies {
     compile 'org.codehaus.plexus:plexus-archiver:2.1'
     compile 'org.robolectric:android-libcore:4.3_r2.robolectric-0'
     compile 'com.joanzapata.android:android-iconify:1.0.9'
+    compile 'asia.ivity.android:drag-sort-listview:1.0'
 }

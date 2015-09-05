@@ -71,6 +71,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/dependency-cache" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/dex" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/dex-cache" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/asia.ivity.android/drag-sort-listview/1.0/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.1.1/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.getpebble/pebblekit/3.0.0/jars" />
@@ -94,14 +95,15 @@
     <orderEntry type="library" exported="" name="appcompat-v7-22.1.1" level="project" />
     <orderEntry type="library" exported="" name="classworlds-1.1-alpha-2" level="project" />
     <orderEntry type="library" exported="" name="junit-3.8.1" level="project" />
-    <orderEntry type="library" exported="" name="plexus-container-default-1.0-alpha-9-stable-1" level="project" />
     <orderEntry type="library" exported="" name="android-libcore-4.3_r2.robolectric-0" level="project" />
-    <orderEntry type="library" exported="" name="plexus-archiver-2.1" level="project" />
+    <orderEntry type="library" exported="" name="plexus-container-default-1.0-alpha-9-stable-1" level="project" />
     <orderEntry type="library" exported="" name="android-iconify-1.0.9" level="project" />
+    <orderEntry type="library" exported="" name="plexus-archiver-2.1" level="project" />
     <orderEntry type="library" exported="" name="plexus-utils-3.0" level="project" />
     <orderEntry type="library" exported="" name="pebblekit-3.0.0" level="project" />
+    <orderEntry type="library" exported="" name="drag-sort-listview-1.0" level="project" />
     <orderEntry type="library" exported="" name="support-v4-22.1.1" level="project" />
-    <orderEntry type="library" exported="" name="support-annotations-22.1.1" level="project" />
     <orderEntry type="library" exported="" name="plexus-io-2.0.2" level="project" />
+    <orderEntry type="library" exported="" name="support-annotations-22.1.1" level="project" />
   </component>
 </module>

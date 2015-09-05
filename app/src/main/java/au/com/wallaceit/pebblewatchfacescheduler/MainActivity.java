@@ -54,6 +54,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.getpebble.android.kit.PebbleKit;
+import com.mobeta.android.dslv.DragSortListView;
 
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.components.io.fileselectors.FileInfo;
@@ -76,6 +77,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -114,7 +116,7 @@ public class MainActivity extends Activity {
         tabsIndicator.setBackgroundColor(Color.parseColor("#42BAD8"));
         tabsIndicator.setInidicatorColor(Color.parseColor("#FF815D"));
 
-        final ListView watchfaceList = (ListView) findViewById(R.id.watchface_listview);
+        final DragSortListView watchfaceList = (DragSortListView) findViewById(R.id.watchface_listview);
         watchfacesAdapter = new WatchfacesAdapter(MainActivity.this);
         watchfaceList.setAdapter(watchfacesAdapter);
         watchfaceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -128,12 +130,12 @@ public class MainActivity extends Activity {
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Add a Watchface").setView(layout)
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.dismiss();
+                                }
+                            }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             if (name.getText().toString().equals("")) {
@@ -154,6 +156,11 @@ public class MainActivity extends Activity {
                     try {
                         String uuid = watchface.getString("uuid");
                         PebbleKit.startAppOnPebble(MainActivity.this, UUID.fromString(uuid));
+                        // set auto rotate index
+                        int index = manager.getAutoScheduleUuidIndex(uuid);
+                        if (index>-1)
+                            manager.setAutoScheduleCurrentIndex(index);
+
                         Toast.makeText(MainActivity.this, "Watchface selected", Toast.LENGTH_SHORT).show();
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -164,7 +171,7 @@ public class MainActivity extends Activity {
         watchfaceList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                if (position==0){
+                if (position == 0) {
                     return true;
                 }
                 JSONObject jsonObject = watchfacesAdapter.getItem(position);
@@ -181,6 +188,12 @@ public class MainActivity extends Activity {
                 // Show a message:
                 Toast.makeText(MainActivity.this, "Copied UUID to clipboard", Toast.LENGTH_SHORT).show();
                 return true;
+            }
+        });
+        watchfaceList.setDropListener(new DragSortListView.DropListener() {
+            @Override
+            public void drop(int i, int i1) {
+                watchfacesAdapter.moveWatchfaceOrder(i, i1);
             }
         });
 
@@ -599,46 +612,73 @@ public class MainActivity extends Activity {
 
     class WatchfacesAdapter extends BaseAdapter {
         private LayoutInflater inflater;
-        private ArrayList<JSONObject> watchfaceList;
         private ArrayList<String> autoUuids;
+        private ArrayList<String> sortIndex;
 
         public WatchfacesAdapter(Context context) {
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            refreshWatchfaces();
-            // get watchfaces enabled for auto rotation
             try {
+                // get watchfaces enabled for auto rotation
                 JSONArray uuids = manager.getAutoSchedule().getJSONArray("uuids");
                 autoUuids = new ArrayList<>();
                 for (int i=0; i<uuids.length(); i++) {
                     autoUuids.add(uuids.getString(i));
                 }
+                // load saved sorting index
+                sortIndex = new ArrayList<>();
+                JSONArray watchfaceSort = new JSONArray(prefs.getString("watchfaceSort", "[]"));
+                for (int i=0; i<watchfaceSort.length(); i++) {
+                    sortIndex.add(watchfaceSort.getString(i));
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            refreshWatchfaces();
         }
 
         private void saveAutoUuids(){
             JSONArray json = new JSONArray();
-            for (int i=0; i<autoUuids.size(); i++) {
-                json.put(autoUuids.get(i));
+            for (int i=0; i<sortIndex.size(); i++) { // iterate through sortIndex
+                String uuid = sortIndex.get(i);
+                if (autoUuids.contains(sortIndex.get(i))) // only add if checked
+                    json.put(uuid);
             }
             manager.setAutoScheduleUuids(json);
         }
 
         public void refreshWatchfaces() {
-            watchfaceList = manager.getUuidList();
-            Collections.sort(watchfaceList, new Comparator<JSONObject>() {
-                @Override
-                public int compare(JSONObject s, JSONObject t1) {
-                    try {
-                        return s.getString("name").compareToIgnoreCase(t1.getString("name"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        return 0;
-                    }
+            JSONObject object = manager.getUuids();
+            // check that all watchfaces are on the sort index, if not add them on the end, keep a list of uuids so we can remove stale entries from the sortIndex
+            ArrayList<String> currentUuids = new ArrayList<>();
+            Iterator it = object.keys();
+            while (it.hasNext()){
+                String uuid  = (String) it.next();
+                currentUuids.add(uuid);
+                if (!sortIndex.contains(uuid))
+                    sortIndex.add(uuid);
+            }
+            // remove any stale/removed watchfaces from the index & save
+            JSONArray sortJson = new JSONArray();
+            for (int i=0; i<sortIndex.size(); i++){
+                String uuid = sortIndex.get(i);
+                if (currentUuids.contains(uuid)){
+                    sortJson.put(uuid);
+                } else {
+                    sortIndex.remove(i);
                 }
-            });
+            }
+            prefs.edit().putString("watchfaceSort", sortJson.toString()).apply();
+
             this.notifyDataSetChanged();
+        }
+
+        public void moveWatchfaceOrder(int from, int to){
+            Log.w(getPackageName(), "Sorting: moving "+from+" to "+to);
+            String uuid = sortIndex.get(--from);
+            sortIndex.remove(from);
+            sortIndex.add(--to, uuid);
+            saveAutoUuids();
+            refreshWatchfaces();
         }
 
         @Override
@@ -676,8 +716,22 @@ public class MainActivity extends Activity {
                 viewHolder.deleteIcon.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        manager.removeUuid(uuid);
-                        refreshWatchfaces();
+                        AlertDialog.Builder bulder = new AlertDialog.Builder(MainActivity.this);
+                        bulder.setTitle("Delete").setMessage("Delete this Watchface?")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                manager.removeUuid(uuid);
+                                refreshWatchfaces();
+                                dialog.dismiss();
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        }).show();
                     }
                 });
                 viewHolder.editIcon.setOnClickListener(new View.OnClickListener() {
@@ -703,7 +757,7 @@ public class MainActivity extends Activity {
                                 }
                                 manager.setUuid(uuid, name.getText().toString());
                                 dialogInterface.dismiss();
-                                watchfacesAdapter.refreshWatchfaces();
+                                refreshWatchfaces();
                             }
                         }).show();
                     }
@@ -716,12 +770,11 @@ public class MainActivity extends Activity {
                         if (isChecked){
                             if (!autoUuids.contains(uuid))
                                 autoUuids.add(uuid);
-                            Log.w(getPackageName(), "Adding "+uuid+" from auto rotate");
+                            Log.w(getPackageName(), "Adding "+uuid+" to auto rotate");
                         } else {
                             autoUuids.remove(uuid);
                             Log.w(getPackageName(), "Removing " + uuid + " from auto rotate");
                         }
-
                         saveAutoUuids();
                     }
                 });
@@ -734,7 +787,7 @@ public class MainActivity extends Activity {
 
         @Override
         public int getCount() {
-            return watchfaceList.size()+1;
+            return sortIndex.size()+1;
         }
 
         @Override
@@ -750,7 +803,12 @@ public class MainActivity extends Activity {
         }
 
         public JSONObject getItem(int position){
-            return watchfaceList.get(position-1);
+            try {
+                return manager.getUuids().getJSONObject(sortIndex.get(position-1));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
 
         @Override
@@ -833,8 +891,22 @@ public class MainActivity extends Activity {
                 viewHolder.deleteIcon.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        manager.removeScheduleItem(key);
-                        refreshSchedule();
+                        AlertDialog.Builder bulder = new AlertDialog.Builder(MainActivity.this);
+                        bulder.setTitle("Delete").setMessage("Delete this Schedule?")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                manager.removeScheduleItem(key);
+                                refreshSchedule();
+                                dialog.dismiss();
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        }).show();
                     }
                 });
                 viewHolder.editIcon.setOnClickListener(new View.OnClickListener() {

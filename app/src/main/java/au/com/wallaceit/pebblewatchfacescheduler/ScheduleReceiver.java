@@ -49,8 +49,10 @@ public class ScheduleReceiver extends BroadcastReceiver {
                 JSONArray uuids = autoSchedule.getJSONArray("uuids");
                 if (index>=uuids.length())
                     index = 0;
-                uuid = uuids.getString(index);
-                manager.setAutoScheduleCurrentIndex(index);
+                if (uuids.length()>0) { // if no selected watchfaces, skip
+                    uuid = uuids.getString(index);
+                    manager.setAutoScheduleCurrentIndex(index);
+                }
                 // reschedule for the next interval
                 manager.scheduleAutoAlarmIntent();
             } catch (JSONException e) {
