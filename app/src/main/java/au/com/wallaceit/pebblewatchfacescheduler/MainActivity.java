@@ -587,6 +587,7 @@ public class MainActivity extends Activity {
             //Log.w("au.com.wallaceit", manager.getUuids().toString());
             // refresh list view and offer to display all apps with their uuid
             watchfacesAdapter.refreshWatchfaces();
+            findViewById(R.id.help_view).setVisibility(View.GONE); // remove import help
             doShowImportDialog(applist);
         } catch (Exception e) {
             e.printStackTrace();
@@ -785,6 +786,7 @@ public class MainActivity extends Activity {
                             public void onClick(DialogInterface dialog, int which) {
                                 manager.removeUuid(uuid);
                                 refreshWatchfaces();
+                                saveAutoUuids();
                                 dialog.dismiss();
                             }
                         })
