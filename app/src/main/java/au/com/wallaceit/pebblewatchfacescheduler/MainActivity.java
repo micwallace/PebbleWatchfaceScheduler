@@ -122,7 +122,7 @@ public class MainActivity extends Activity {
         watchfaceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                if (position == 0) {
+                if (position == watchfacesAdapter.getCount()-1) {
                     LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_watchface, parent, false);
                     final EditText uuid = (EditText) layout.findViewById(R.id.watchface_uuid);
                     uuid.setVisibility(View.VISIBLE);
@@ -197,13 +197,13 @@ public class MainActivity extends Activity {
             }
         });
 
-        ListView scheduleList = (ListView) findViewById(R.id.schedule_listview);
+        final ListView scheduleList = (ListView) findViewById(R.id.schedule_listview);
         scheduleAdapter = new ScheduleAdapter(MainActivity.this);
         scheduleList.setAdapter(scheduleAdapter);
         scheduleList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                if (position == 0) {
+                if (position == scheduleList.getCount()-1) {
                     LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_schedule, parent, false);
                     final Spinner watchselect = (Spinner) layout.findViewById(R.id.watchface_selector);
                     watchselect.setVisibility(View.VISIBLE);
@@ -242,7 +242,7 @@ public class MainActivity extends Activity {
         });
 
         // setup auto rotation UI
-        CheckBox cb = (CheckBox) findViewById(R.id.auto_enabled);
+        final CheckBox cb = (CheckBox) findViewById(R.id.auto_enabled);
         try {
             cb.setChecked(manager.getAutoSchedule().getBoolean("enabled"));
         } catch (JSONException e) {
@@ -251,6 +251,20 @@ public class MainActivity extends Activity {
         cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    // check if watchfaces are selected
+                    try {
+                        JSONArray uuids = manager.getAutoSchedule().getJSONArray("uuids");
+                        if (uuids.length()==0){
+                            cb.setChecked(false);
+                            Toast.makeText(MainActivity.this, "Select some watchfaces first", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                }
                 manager.setAutoScheduleEnabled(isChecked);
             }
         });
@@ -673,10 +687,11 @@ public class MainActivity extends Activity {
         }
 
         public void moveWatchfaceOrder(int from, int to){
+            if (to>=sortIndex.size()) return;
             Log.w(getPackageName(), "Sorting: moving "+from+" to "+to);
-            String uuid = sortIndex.get(--from);
+            String uuid = sortIndex.get(from);
             sortIndex.remove(from);
-            sortIndex.add(--to, uuid);
+            sortIndex.add(to, uuid);
             saveAutoUuids();
             refreshWatchfaces();
         }
@@ -688,7 +703,7 @@ public class MainActivity extends Activity {
             if (convertView == null || convertView.getTag() == null) {
                 // inflate new view
                 viewHolder = new ViewHolder();
-                if (position == 0) {
+                if (position == sortIndex.size()) {
                     convertView = inflater.inflate(R.layout.listitem_add, parent, false);
                     ((TextView) convertView.findViewById(R.id.add_text)).setText("Add Watchface");
                 } else {
@@ -701,7 +716,7 @@ public class MainActivity extends Activity {
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
-            if (position > 0) {
+            if (position < sortIndex.size()) {
                 JSONObject watchfaceObj = getItem(position);
                 final String displayName, uuid;
                 try {
@@ -797,14 +812,14 @@ public class MainActivity extends Activity {
 
         @Override
         public int getItemViewType(int position){
-            if (position == 0)
+            if (position == sortIndex.size())
                 return 1;
             return 0;
         }
 
         public JSONObject getItem(int position){
             try {
-                return manager.getUuids().getJSONObject(sortIndex.get(position-1));
+                return manager.getUuids().getJSONObject(sortIndex.get(position));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -856,7 +871,7 @@ public class MainActivity extends Activity {
             if (convertView == null || convertView.getTag() == null) {
                 // inflate new view
                 viewHolder = new ViewHolder();
-                if (position == 0) {
+                if (position == scheduleList.size()) {
                     convertView = inflater.inflate(R.layout.listitem_add, parent, false);
                     ((TextView) convertView.findViewById(R.id.add_text)).setText("Add To Schedule");
                 } else {
@@ -869,7 +884,7 @@ public class MainActivity extends Activity {
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
-            if (position > 0) {
+            if (position < scheduleList.size()) {
                 final JSONObject scheduleObj = getItem(position);
                 final String key, uuid, displayTime, displayName;
                 final Long time;
@@ -934,13 +949,13 @@ public class MainActivity extends Activity {
 
         @Override
         public int getItemViewType(int position){
-            if (position == 0)
+            if (position < scheduleList.size())
                 return 1;
             return 0;
         }
 
         public JSONObject getItem(int position){
-            return scheduleList.get(position-1);
+            return scheduleList.get(position);
         }
 
         @Override
