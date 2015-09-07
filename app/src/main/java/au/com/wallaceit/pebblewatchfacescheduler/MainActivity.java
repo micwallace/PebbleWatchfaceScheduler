@@ -937,13 +937,15 @@ public class MainActivity extends Activity {
                 final JSONObject scheduleObj = getItem(position);
                 final String key, uuid, displayTime, displayName;
                 final Long time;
+                final int day;
                 try {
                     key = scheduleObj.getString("key");
                     uuid = scheduleObj.getString("uuid");
                     time = scheduleObj.getLong("time");
+                    day = scheduleObj.getInt("day");
                     Date date = new Date(time);
                     SimpleDateFormat sdf = new SimpleDateFormat("hh:mma", Locale.ENGLISH);
-                    displayTime = sdf.format(date);
+                    displayTime = sdf.format(date)+" "+Manager.getDayOfWeekLabel(day);
                     displayName = manager.getUuids().getJSONObject(uuid).getString("name");
                 } catch (JSONException e) {
                     e.printStackTrace();
