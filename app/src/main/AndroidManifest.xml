@@ -17,11 +17,10 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter android:label="Import App UUIDs" >
+            <intent-filter android:label="Import Pebble App UUIDs" >
                 <data android:host="*" />
                 <data android:mimeType="*/*" />
-                <data android:pathPattern="/.*\\..*\\.gz" />
-                <data android:pathPattern="/.*\\..*\\..*\\.gz" />
+                <data android:pathPattern="/.*\\.gz" />
 
                 <action android:name="android.intent.action.VIEW" />
 

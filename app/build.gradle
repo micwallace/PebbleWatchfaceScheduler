@@ -8,8 +8,8 @@ android {
         applicationId "au.com.wallaceit.pebblewatchfacescheduler"
         minSdkVersion 14
         targetSdkVersion 22
-        versionCode 4
-        versionName "1.0"
+        versionCode 5
+        versionName "1.1"
     }
     buildTypes {
         release {

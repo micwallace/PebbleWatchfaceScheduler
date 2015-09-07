@@ -40,7 +40,7 @@ public class ScheduleReceiver extends BroadcastReceiver {
         String alarmKey = intent.getStringExtra("key");
         Manager manager = new Manager(context);
         String uuid = null;
-        if (alarmKey.equals("0")){
+        if (alarmKey.equals("0")){ // auto rotation schedule
             Log.w("au.com.wallaceit", "Intent received for autorotate, switching watchface");
             JSONObject autoSchedule = manager.getAutoSchedule();
             try {

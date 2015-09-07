@@ -30,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 
 public class Manager {
@@ -127,11 +128,24 @@ public class Manager {
         return scheduleList;
     }
 
-    public void setScheduleItem(String key, String uuid, Long millis){
+    public void setScheduleItem(String key, String uuid, Calendar time, int dayOfWeek){
+        // if day of week selected, adjust to that day
+        long millis;
+        if (dayOfWeek==0) {
+            millis = time.getTimeInMillis();
+            if (millis<Calendar.getInstance().getTimeInMillis()){ // if time has past, schedule for the next day
+                time.add(Calendar.DAY_OF_YEAR, 1);
+                millis = time.getTimeInMillis(); // add a day
+            }
+        } else {
+            millis = Manager.nextDayOfWeek(dayOfWeek, time).getTimeInMillis();
+        }
+
         JSONObject scheduleObj = new JSONObject();
         try {
             scheduleObj.put("uuid", uuid);
             scheduleObj.put("time", millis);
+            scheduleObj.put("day", dayOfWeek);
             schedule.put(key, scheduleObj);
             saveSchedule();
             scheduleAlarmIntent(key, uuid, millis);
@@ -152,10 +166,18 @@ public class Manager {
             JSONObject scheduleObj = schedule.getJSONObject(key);
             String uuid = scheduleObj.getString("uuid");
             Long time = scheduleObj.getLong("time");
-            time += 86400000; // add a day
+            int dayOfWeek = scheduleObj.has("day")?scheduleObj.getInt("day"):0;
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(time);
+            if (dayOfWeek==0) {
+                calendar.add(Calendar.DAY_OF_YEAR, 1);
+                time = calendar.getTimeInMillis(); // add a day
+            } else {
+                // set for the next week on the specified day
+                time = Manager.nextDayOfWeek(dayOfWeek, calendar).getTimeInMillis();
+            }
             scheduleObj.put("time", time);
             schedule.put(key, scheduleObj);
-
             scheduleAlarmIntent(key, uuid, time);
             saveSchedule();
         } catch (JSONException e) {
@@ -243,7 +265,9 @@ public class Manager {
     }
 
     public void scheduleAlarmIntent(String key, String uuid, Long millis){
-        Log.w("au.com.wallaceit", "Scheduling alarm: "+key);
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(millis);
+        Log.w("au.com.wallaceit", "Scheduling alarm "+key+" for "+cal.getTime().toString());
         Intent alarmIntent = new Intent(context, ScheduleReceiver.class);
         alarmIntent.putExtra("uuid", uuid);
         alarmIntent.putExtra("key", key);
@@ -262,5 +286,44 @@ public class Manager {
 
     private void saveAutoSchedule(){
         preferences.edit().putString("autoSchedule", autoSchedule.toString()).apply();
+    }
+
+    public static Calendar nextDayOfWeek(int dow, Calendar alarmDate) {
+        Calendar date = Calendar.getInstance();
+        int diff = dow - alarmDate.get(Calendar.DAY_OF_WEEK);
+        if (diff<0 || (diff==0 && alarmDate.getTimeInMillis()<date.getTimeInMillis())) { // add 7 days if the difference is minus, or if it's today & the alarm time has passed.
+            diff += 7;
+        }
+        alarmDate.add(Calendar.DAY_OF_MONTH, diff);
+        return alarmDate;
+    }
+
+    public static int getDayOfWeekNumber(String day){
+        int daynum = 0;
+        switch (day.toLowerCase()){
+            case "sunday": daynum = 1; break;
+            case "monday": daynum = 2; break;
+            case "tuesday": daynum = 3; break;
+            case "wednesday": daynum = 4; break;
+            case "thursday": daynum = 5; break;
+            case "friday": daynum = 6; break;
+            case "saturday": daynum = 7; break;
+        }
+        return daynum;
+    }
+
+    public static String getDayOfWeekLabel(int daynum){
+        String day = "";
+        switch (daynum){
+            case 0: day = "Every Day"; break;
+            case 1: day = "Sunday"; break;
+            case 2: day = "Monday"; break;
+            case 3: day = "Tuesday"; break;
+            case 4: day = "Wednesday"; break;
+            case 5: day = "Thursday"; break;
+            case 6: day = "Friday"; break;
+            case 7: day = "Saturday"; break;
+        }
+        return day;
     }
 }

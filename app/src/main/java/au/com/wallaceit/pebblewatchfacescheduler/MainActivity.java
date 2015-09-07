@@ -74,6 +74,7 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -116,6 +117,11 @@ public class MainActivity extends Activity {
         tabsIndicator.setBackgroundColor(Color.parseColor("#42BAD8"));
         tabsIndicator.setInidicatorColor(Color.parseColor("#FF815D"));
 
+        // show import instructions if no watchface present
+        if (manager.getUuids().length()==0){
+            findViewById(R.id.help_view).setVisibility(View.VISIBLE);
+        }
+
         final DragSortListView watchfaceList = (DragSortListView) findViewById(R.id.watchface_listview);
         watchfacesAdapter = new WatchfacesAdapter(MainActivity.this);
         watchfaceList.setAdapter(watchfacesAdapter);
@@ -127,7 +133,6 @@ public class MainActivity extends Activity {
                     final EditText uuid = (EditText) layout.findViewById(R.id.watchface_uuid);
                     uuid.setVisibility(View.VISIBLE);
                     final EditText name = (EditText) layout.findViewById(R.id.watchface_name);
-
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Add a Watchface").setView(layout)
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -203,11 +208,19 @@ public class MainActivity extends Activity {
         scheduleList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
+
                 if (position == scheduleList.getCount()-1) {
+                    if (manager.getUuids().length()==0){
+                        Toast.makeText(MainActivity.this, "Add some watchfaces first", Toast.LENGTH_LONG).show();
+                        return;
+                    }
                     LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_schedule, parent, false);
                     final Spinner watchselect = (Spinner) layout.findViewById(R.id.watchface_selector);
-                    watchselect.setVisibility(View.VISIBLE);
                     watchselect.setAdapter(new WatchfaceSpinnerAdapter());
+                    final Spinner dayselect = (Spinner) layout.findViewById(R.id.day_selector);
+                    ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(MainActivity.this, R.array.day_units, android.R.layout.simple_spinner_item);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    dayselect.setAdapter(adapter);
                     final TimePicker timeselect = (TimePicker) layout.findViewById(R.id.time_selector);
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -220,13 +233,13 @@ public class MainActivity extends Activity {
                             }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            Date date = new Date();
-                            date.setHours(timeselect.getCurrentHour());
-                            date.setMinutes(timeselect.getCurrentMinute());
-                            date.setSeconds(0);
+                            Calendar date = Calendar.getInstance();
+                            date.set(Calendar.HOUR_OF_DAY, timeselect.getCurrentHour());
+                            date.set(Calendar.MINUTE, timeselect.getCurrentMinute());
+                            date.set(Calendar.SECOND, 0);
                             JSONObject watchface = (JSONObject) watchselect.getSelectedItem();
                             try {
-                                manager.setScheduleItem(String.valueOf(System.currentTimeMillis()), watchface.getString("uuid"), date.getTime());
+                                manager.setScheduleItem(String.valueOf(System.currentTimeMillis()), watchface.getString("uuid"), date, Manager.getDayOfWeekNumber((String) dayselect.getSelectedItem()));
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -370,6 +383,18 @@ public class MainActivity extends Activity {
             return convertView;
         }
 
+        public int getUuidIndex(String uuid){
+            for (int i = 0; i<list.size(); i++){
+                try {
+                    String itemuuid = list.get(i).getString("uuid");
+                    if (uuid.equals(itemuuid)) return i;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            return 0;
+        }
+
         @Override
         public void registerDataSetObserver(DataSetObserver observer) {
 
@@ -445,21 +470,34 @@ public class MainActivity extends Activity {
 
     private void openScheduleEditDialog(JSONObject scheduleObj){
         LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_schedule, null, false);
+        final Spinner watchselect = (Spinner) layout.findViewById(R.id.watchface_selector);
+        WatchfaceSpinnerAdapter spinnerAdapter = new WatchfaceSpinnerAdapter();
+        watchselect.setAdapter(spinnerAdapter);
+        final Spinner dayselect = (Spinner) layout.findViewById(R.id.day_selector);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(MainActivity.this, R.array.day_units, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dayselect.setAdapter(adapter);
         final TimePicker timeselect = (TimePicker) layout.findViewById(R.id.time_selector);
-        final Date date;
         final String key, uuid;
+        final Calendar date;
         try {
-            date = new Date(scheduleObj.getLong("time"));
-            date.setDate(new Date().getDate());
-            date.setSeconds(0);
+            date = Calendar.getInstance();
+            date.setTimeInMillis(scheduleObj.getLong("time"));
+            Calendar curdate = Calendar.getInstance();
+            date.set(Calendar.DAY_OF_YEAR, curdate.get(Calendar.DAY_OF_YEAR));
+            date.set(Calendar.SECOND, 0);
             key = scheduleObj.getString("key");
             uuid = scheduleObj.getString("uuid");
+            watchselect.setSelection(spinnerAdapter.getUuidIndex(uuid));
+            String selectedLabel = Manager.getDayOfWeekLabel((scheduleObj.has("day")?scheduleObj.getInt("day"):0));
+            int itemIndex = Arrays.asList(getResources().getStringArray(R.array.day_units)).indexOf(selectedLabel);
+            dayselect.setSelection(itemIndex);
         } catch (JSONException e) {
             e.printStackTrace();
             return;
         }
-        timeselect.setCurrentHour(date.getHours());
-        timeselect.setCurrentMinute(date.getMinutes());
+        timeselect.setCurrentHour(date.get(Calendar.HOUR_OF_DAY));
+        timeselect.setCurrentMinute(date.get(Calendar.MINUTE));
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle("Edit schedule").setView(layout)
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -470,9 +508,18 @@ public class MainActivity extends Activity {
                 }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                date.setHours(timeselect.getCurrentHour());
-                date.setMinutes(timeselect.getCurrentMinute());
-                manager.setScheduleItem(key, uuid, date.getTime());
+                date.set(Calendar.HOUR_OF_DAY, timeselect.getCurrentHour());
+                date.set(Calendar.MINUTE, timeselect.getCurrentMinute());
+
+                JSONObject watchObj = (JSONObject) watchselect.getSelectedItem();
+                String newuuid;
+                try {
+                    newuuid = watchObj.getString("uuid");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    newuuid = uuid;
+                }
+                manager.setScheduleItem(key, newuuid, date, Manager.getDayOfWeekNumber((String) dayselect.getSelectedItem()));
                 dialogInterface.dismiss();
                 scheduleAdapter.refreshSchedule();
             }

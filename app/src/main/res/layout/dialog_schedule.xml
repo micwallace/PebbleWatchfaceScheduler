@@ -5,11 +5,15 @@
     android:paddingStart="5dip"
     android:paddingEnd="5dip">
     <Spinner
-        android:visibility="gone"
         android:id="@+id/watchface_selector"
         android:layout_width="fill_parent"
         android:layout_height="50dp"
         android:layout_marginBottom="5dip"/>
+    <Spinner
+        android:id="@+id/day_selector"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="5dip" />
     <TimePicker
         android:id="@+id/time_selector"
         android:layout_width="fill_parent"
