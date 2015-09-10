@@ -18,14 +18,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter android:label="Import Pebble App UUIDs" >
-                <data android:host="*" />
-                <data android:mimeType="*/*" />
-                <data android:pathPattern="/.*\\.gz" />
-
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" android:mimeType="application/x-gzip" android:host="*" />
+            </intent-filter>
+            <intent-filter android:label="Import Pebble App UUIDs" >
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" android:host="*" android:pathPattern="/.*\\.gz" />
             </intent-filter>
         </activity>
 

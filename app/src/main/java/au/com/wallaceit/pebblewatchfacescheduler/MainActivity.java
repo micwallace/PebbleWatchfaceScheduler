@@ -527,7 +527,7 @@ public class MainActivity extends Activity {
     }
 
     private void doUUIDImport() {
-
+        //Log.w(getPackageName(), getIntent().getType()+" "+getIntent().getScheme()+" "+getIntent().getCategories());
         try {
             // validate name
             String[] projection = {MediaStore.MediaColumns.DISPLAY_NAME};
@@ -539,6 +539,7 @@ public class MainActivity extends Activity {
                             Toast.makeText(MainActivity.this, "Wrong file, please open pebble.log.gz to import app info", Toast.LENGTH_LONG).show();
                             return;
                         }
+                        //Log.w(getPackageName(), "filename: "+metaCursor.getString(0));
                     }
                 } finally {
                     metaCursor.close();
@@ -579,7 +580,7 @@ public class MainActivity extends Activity {
             JSONObject watchfaces = new JSONObject();
             String applist = "";
             while (matcher.find()){
-                if (matcher.group(2).equals("watchface"))
+                if (matcher.group(2).equals("watchface") && !matcher.group(1).equals("NOT ON WATCH"))
                     watchfaces.put(matcher.group(3), matcher.group(1));
                 applist+= matcher.group(1)+"\n"+matcher.group(3)+"\n\n";
             }
@@ -767,13 +768,17 @@ public class MainActivity extends Activity {
             if (position < sortIndex.size()) {
                 JSONObject watchfaceObj = getItem(position);
                 final String displayName, uuid;
+                String tempName, tempUuid;
                 try {
-                    displayName = watchfaceObj.getString("name");
-                    uuid = watchfaceObj.getString("uuid");
+                    tempName = watchfaceObj.getString("name");
+                    tempUuid = watchfaceObj.getString("uuid");
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    return null;
+                    tempName = "";
+                    tempUuid = "null";
                 }
+                uuid = tempUuid;
+                displayName = tempName;
                 // setup the row
                 viewHolder.name.setText(displayName);
                 viewHolder.deleteIcon.setOnClickListener(new View.OnClickListener() {
@@ -936,22 +941,28 @@ public class MainActivity extends Activity {
             if (position < scheduleList.size()) {
                 final JSONObject scheduleObj = getItem(position);
                 final String key, uuid, displayTime, displayName;
+                String displayTimeTemp, displayNameTemp, keyTemp;
                 final Long time;
                 final int day;
                 try {
-                    key = scheduleObj.getString("key");
+                    keyTemp = scheduleObj.getString("key");
                     uuid = scheduleObj.getString("uuid");
                     time = scheduleObj.getLong("time");
                     day = scheduleObj.getInt("day");
                     Date date = new Date(time);
                     SimpleDateFormat sdf = new SimpleDateFormat("hh:mma", Locale.ENGLISH);
-                    displayTime = sdf.format(date)+" "+Manager.getDayOfWeekLabel(day);
-                    displayName = manager.getUuids().getJSONObject(uuid).getString("name");
+                    displayTimeTemp = sdf.format(date)+" "+Manager.getDayOfWeekLabel(day);
+                    displayNameTemp = manager.getUuids().getJSONObject(uuid).getString("name");
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    return null;
+                    displayNameTemp = "";
+                    displayTimeTemp = "";
+                    keyTemp = "null";
                 }
                 // setup the row
+                key = keyTemp;
+                displayTime = displayTimeTemp;
+                displayName = displayNameTemp;
                 viewHolder.name.setText(displayName);
                 viewHolder.time.setText(displayTime);
                 viewHolder.deleteIcon.setOnClickListener(new View.OnClickListener() {
@@ -959,20 +970,20 @@ public class MainActivity extends Activity {
                     public void onClick(View v) {
                         AlertDialog.Builder bulder = new AlertDialog.Builder(MainActivity.this);
                         bulder.setTitle("Delete").setMessage("Delete this Schedule?")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                manager.removeScheduleItem(key);
-                                refreshSchedule();
-                                dialog.dismiss();
-                            }
-                        })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        }).show();
+                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        manager.removeScheduleItem(key);
+                                        refreshSchedule();
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                }).show();
                     }
                 });
                 viewHolder.editIcon.setOnClickListener(new View.OnClickListener() {
