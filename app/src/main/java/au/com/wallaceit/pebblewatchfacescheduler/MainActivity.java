@@ -53,7 +53,6 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.getpebble.android.kit.PebbleKit;
 import com.mobeta.android.dslv.DragSortListView;
 
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
@@ -82,7 +81,6 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -160,7 +158,7 @@ public class MainActivity extends Activity {
                     JSONObject watchface = watchfacesAdapter.getItem(position);
                     try {
                         String uuid = watchface.getString("uuid");
-                        PebbleKit.startAppOnPebble(MainActivity.this, UUID.fromString(uuid));
+                        manager.setPebbleWatchface(uuid);
                         // set auto rotate index
                         int index = manager.getAutoScheduleUuidIndex(uuid);
                         if (index>-1)
@@ -245,6 +243,9 @@ public class MainActivity extends Activity {
                             }
                             dialogInterface.dismiss();
                             scheduleAdapter.refreshSchedule();
+                            if (watchselect.getSelectedItemPosition()==0 && manager.getUuidList().size()==0){
+                                Toast.makeText(MainActivity.this, "You don't have any watchfaces enabled for randomisation, check their checkbox in the list to enable", Toast.LENGTH_LONG).show();
+                            }
                         }
                     }).show();
                 } else {
@@ -264,11 +265,11 @@ public class MainActivity extends Activity {
         cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked){
+                if (isChecked) {
                     // check if watchfaces are selected
                     try {
                         JSONArray uuids = manager.getAutoSchedule().getJSONArray("uuids");
-                        if (uuids.length()==0){
+                        if (uuids.length() == 0) {
                             cb.setChecked(false);
                             Toast.makeText(MainActivity.this, "Select some watchfaces first", Toast.LENGTH_LONG).show();
                             return;
@@ -279,6 +280,15 @@ public class MainActivity extends Activity {
                     }
                 }
                 manager.setAutoScheduleEnabled(isChecked);
+            }
+        });
+
+        final CheckBox randomCb = (CheckBox) findViewById(R.id.auto_random);
+        randomCb.setChecked(manager.isAutoScheduleRandom());
+        randomCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                manager.setAutoScheduleRandom(isChecked);
             }
         });
 
@@ -372,6 +382,10 @@ public class MainActivity extends Activity {
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
+            if (position==0){
+                viewHolder.name.setText("Random");
+                return convertView;
+            }
             JSONObject item = (JSONObject) getItem(position);
             try {
                 String name = item.getString("name");
@@ -384,6 +398,9 @@ public class MainActivity extends Activity {
         }
 
         public int getUuidIndex(String uuid){
+            if (uuid.equals("0"))
+                return 0;
+
             for (int i = 0; i<list.size(); i++){
                 try {
                     String itemuuid = list.get(i).getString("uuid");
@@ -407,12 +424,22 @@ public class MainActivity extends Activity {
 
         @Override
         public int getCount() {
-            return list.size();
+            return list.size()+1;
         }
 
         @Override
         public Object getItem(int position) {
-            return list.get(position);
+            if (position==0){
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("name", "Random");
+                    json.put("uuid", "0");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return json;
+            }
+            return list.get(position-1);
         }
 
         @Override
@@ -436,6 +463,10 @@ public class MainActivity extends Activity {
                 viewHolder.name.setTextSize(20);
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
+            }
+            if (position==0){
+                viewHolder.name.setText("Random");
+                return convertView;
             }
             JSONObject item = (JSONObject) getItem(position);
             try {
@@ -952,7 +983,11 @@ public class MainActivity extends Activity {
                     Date date = new Date(time);
                     SimpleDateFormat sdf = new SimpleDateFormat("hh:mma", Locale.ENGLISH);
                     displayTimeTemp = sdf.format(date)+" "+Manager.getDayOfWeekLabel(day);
-                    displayNameTemp = manager.getUuids().getJSONObject(uuid).getString("name");
+                    if (uuid.equals("0")) {
+                        displayNameTemp = "Random";
+                    } else {
+                        displayNameTemp = manager.getUuids().getJSONObject(uuid).getString("name");
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                     displayNameTemp = "";

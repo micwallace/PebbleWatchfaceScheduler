@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:windowSoftInputMode="stateHidden"
     android:orientation="vertical"
     android:id="@+id/redditview"
@@ -32,7 +33,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
                     android:text="@string/auto_rotate"/>
-                <LinearLayout
+                <RelativeLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -40,25 +41,66 @@
                     <!-- Dummy item to prevent AutoCompleteTextView from receiving focus -->
                     <LinearLayout
                         android:focusable="true" android:focusableInTouchMode="true"
-                        android:layout_width="0px" android:layout_height="0px"/>
-                    <TextView
-                        android:id="@+id/auto_enabled_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/enabled"/>
+                        android:layout_width="0px" android:layout_height="0px"
+                        tools:ignore="UselessLeaf" />
                     <CheckBox
                         android:id="@+id/auto_enabled"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="18dp"
+                        android:layout_margin="4dp"
+                        android:layout_marginEnd="0dp"
+                        android:layout_marginRight="0dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true" />
+                    <TextView
+                        android:id="@+id/auto_enabled_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="18dp"
+                        android:layout_margin="4dp"
+                        android:layout_marginStart="0dp"
+                        android:layout_marginLeft="0dp"
+                        android:paddingBottom="2dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_toRightOf="@id/auto_enabled"
+                        android:layout_toEndOf="@id/auto_enabled"
+                        android:text="@string/enabled"/>
+                    <CheckBox
+                        android:id="@+id/auto_random"
+                        android:layout_width="wrap_content"
+                        android:layout_height="18dp"
+                        android:layout_margin="4dp"
+                        android:layout_marginEnd="0dp"
+                        android:layout_marginRight="0dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_below="@id/auto_enabled"/>
+                    <TextView
+                        android:id="@+id/auto_random_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="18dp"
+                        android:layout_margin="4dp"
+                        android:layout_marginStart="0dp"
+                        android:layout_marginLeft="0dp"
+                        android:layout_toRightOf="@id/auto_random"
+                        android:layout_toEndOf="@id/auto_random"
+                        android:layout_below="@id/auto_enabled_label"
+                        android:text="@string/random"/>
                     <NumberPicker
                         android:id="@+id/auto_increment"
                         android:layout_width="wrap_content"
-                        android:layout_height="60dip"/>
+                        android:layout_height="60dip"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_toRightOf="@id/auto_enabled_label"
+                        android:layout_toEndOf="@id/auto_enabled_label"/>
                     <Spinner
                         android:id="@+id/auto_unit"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-                </LinearLayout>
+                        android:layout_height="wrap_content"
+                        android:layout_toRightOf="@id/auto_increment"
+                        android:layout_toEndOf="@id/auto_increment"/>
+                </RelativeLayout>
             </LinearLayout>
             <com.mobeta.android.dslv.DragSortListView
                 xmlns:android="http://schemas.android.com/apk/res/android"

@@ -19,6 +19,7 @@
     <string name="sort">Sort</string>
     <string name="import_help_header">Importing Watchfaces:</string>
     <string name="import_help_text">1. Open up the Pebble app and click on support from the menu \n2. Click \"Contact Support\", your Android email client will open with a diagnostic email \n3. Send the email to yourself and open the \"pebble.log.gz\" attachment with this application</string>
+    <string name="random">Random</string>
     <string-array name="time_units">
         <item>Minutes</item>
         <item>Hours</item>

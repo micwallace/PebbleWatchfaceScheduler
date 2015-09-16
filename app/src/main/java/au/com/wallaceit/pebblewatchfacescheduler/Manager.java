@@ -25,6 +25,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.getpebble.android.kit.PebbleKit;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,6 +34,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.Random;
+import java.util.UUID;
 
 public class Manager {
     Context context;
@@ -46,7 +50,7 @@ public class Manager {
         try {
             uuids = new JSONObject(preferences.getString("uuids", "{}"));
             schedule = new JSONObject(preferences.getString("schedule", "{}"));
-            autoSchedule = new JSONObject(preferences.getString("autoSchedule", "{\"enabled\":false,\"interval\":86400000,\"uuids\":[],\"curindex\":0}"));
+            autoSchedule = new JSONObject(preferences.getString("autoSchedule", "{\"enabled\":false,\"random\":false,\"interval\":86400000,\"uuids\":[],\"curindex\":0}"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -247,6 +251,48 @@ public class Manager {
         return -1;
     }
 
+    public boolean isAutoScheduleRandom(){
+        if (!autoSchedule.has("random"))
+            return false;
+        try {
+            return autoSchedule.getBoolean("random");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void setAutoScheduleRandom(boolean random){
+        try {
+            autoSchedule.put("random", random);
+            saveAutoSchedule();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getRandomUuidFromSelection(){
+        String uuid = null;
+        JSONArray uuids;
+        try {
+            uuids = autoSchedule.getJSONArray("uuids");
+            if (uuids.length()==0)
+                return null;
+        } catch (JSONException e) {
+            return null;
+        }
+        String currentUuid = preferences.getString("curuuid", "");
+        Random rand = new Random();
+        do {
+            try {
+                uuid = uuids.getString(rand.nextInt(uuids.length()));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } while(uuid==null || uuid.equals(currentUuid));
+        return uuid;
+    }
+
     public void scheduleAutoAlarmIntent(){
         Long time = System.currentTimeMillis();
         try {
@@ -274,6 +320,11 @@ public class Manager {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, Long.valueOf(key).intValue(), alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC_WAKEUP, millis, pendingIntent);
+    }
+
+    public void setPebbleWatchface(String uuid){
+        PebbleKit.startAppOnPebble(context, UUID.fromString(uuid));
+        preferences.edit().putString("curuuid", uuid).apply();
     }
 
     private void saveUuids(){
