@@ -25,7 +25,22 @@
             <intent-filter android:label="Import Pebble App UUIDs" >
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="file" android:mimeType="application/zip" android:host="*" />
+            </intent-filter>
+            <intent-filter android:label="Import Pebble App UUIDs" >
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" android:host="*" android:pathPattern="/.*\\.gz" />
+            </intent-filter>
+            <intent-filter android:label="Import Pebble App UUIDs" >
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/x-gzip" android:host="*" />
+            </intent-filter>
+            <intent-filter android:label="Import Pebble App UUIDs" >
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/zip" android:host="*" />
             </intent-filter>
         </activity>
 

@@ -558,7 +558,7 @@ public class MainActivity extends Activity {
     }
 
     private void doUUIDImport() {
-        //Log.w(getPackageName(), getIntent().getType()+" "+getIntent().getScheme()+" "+getIntent().getCategories());
+        Log.w(getPackageName(), getIntent().getType()+" "+getIntent().getScheme());
         try {
             // validate name
             String[] projection = {MediaStore.MediaColumns.DISPLAY_NAME};
