@@ -22,10 +22,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
@@ -328,7 +330,7 @@ public class MainActivity extends Activity {
         });
 
         // check for file import
-        if (getIntent().getAction().equals("android.intent.action.VIEW") && getIntent().getData()!=null){
+        if ((getIntent().getAction().equals(Intent.ACTION_VIEW) && getIntent().getData()!=null) || (getIntent().getAction().equals(Intent.ACTION_SEND_MULTIPLE))){
             doUUIDImport();
         }
     }
@@ -557,25 +559,58 @@ public class MainActivity extends Activity {
         }).show();
     }
 
+    private boolean checkPebbleLogFile(Uri file){
+        // validate name
+        String[] projection = {MediaStore.MediaColumns.DISPLAY_NAME};
+        Cursor metaCursor = this.getContentResolver().query(file, projection, null, null, null);
+        if (metaCursor != null) {
+            try {
+                if (metaCursor.moveToFirst()) {
+                    if (!metaCursor.getString(0).equals("pebble.log.gz")){
+                        Toast.makeText(MainActivity.this, "Wrong file, please open pebble.log.gz to import app info", Toast.LENGTH_LONG).show();
+                        return false;
+                    }
+                }
+            } finally {
+                metaCursor.close();
+            }
+        }
+        return true;
+    }
+
     private void doUUIDImport() {
         Log.w(getPackageName(), getIntent().getType()+" "+getIntent().getScheme());
-        try {
-            // validate name
-            String[] projection = {MediaStore.MediaColumns.DISPLAY_NAME};
-            Cursor metaCursor = this.getContentResolver().query(getIntent().getData(), projection, null, null, null);
-            if (metaCursor != null) {
-                try {
-                    if (metaCursor.moveToFirst()) {
-                        if (!metaCursor.getString(0).equals("pebble.log.gz")){
-                            Toast.makeText(MainActivity.this, "Wrong file, please open pebble.log.gz to import app info", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        //Log.w(getPackageName(), "filename: "+metaCursor.getString(0));
+        String action = getIntent().getAction();
+        Uri file = null;
+        switch (action) {
+            case Intent.ACTION_SEND_MULTIPLE:
+                ArrayList<Uri> imageUris = getIntent().getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+                boolean valid = false;
+                for (int i = 0; i < imageUris.size(); i++) {
+                    if (imageUris.get(i).toString().contains("pebble.log.gz")) {
+                        valid = true;
+                        file = imageUris.get(i);
+                        break;
                     }
-                } finally {
-                    metaCursor.close();
                 }
-            }
+                // did we get a valid file?
+                if (!valid) {
+                    Toast.makeText(MainActivity.this, "Wrong file, please open pebble.log.gz to import app info", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                break;
+            case Intent.ACTION_VIEW:
+                // validate name
+                file = getIntent().getData();
+                if (!checkPebbleLogFile(file)) {
+                    Toast.makeText(MainActivity.this, "Wrong file, please open pebble.log.gz to import app info", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                break;
+            default:
+                return;
+        }
+        try {
             // prepare to unzip file from archive
             final ZipUnArchiver ua = new ZipUnArchiver(); // although .gz, it seems to be zip encoded
             ua.enableLogging(new ConsoleLogger(ConsoleLogger.LEVEL_DEBUG, "Logger"));
@@ -588,7 +623,7 @@ public class MainActivity extends Activity {
                     }
             });
             // copy the archive to a temp location; the plexus-archive library cannot work with an output stream provided by content provider
-            InputStream is = this.getContentResolver().openInputStream(getIntent().getData());
+            InputStream is = this.getContentResolver().openInputStream(file);
             File destarchive = new File(this.getCacheDir(), "pebble.log.gz");
             FileOutputStream f = new FileOutputStream(destarchive);
             byte[] buffer = new byte[1024];
@@ -611,7 +646,7 @@ public class MainActivity extends Activity {
             JSONObject watchfaces = new JSONObject();
             String applist = "";
             while (matcher.find()){
-                if (matcher.group(2).equals("watchface") && !matcher.group(1).equals("NOT ON WATCH"))
+                if (matcher.group(2).equals("watchface") && (!matcher.group(1).equals("NOT ON WATCH") && !matcher.group(1).equals("UNSUPPORTED WATCHFACES")))
                     watchfaces.put(matcher.group(3), matcher.group(1));
                 applist+= matcher.group(1)+"\n"+matcher.group(3)+"\n\n";
             }
