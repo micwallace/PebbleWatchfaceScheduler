@@ -1,26 +1,26 @@
 <resources>
     <string name="app_name">Watchface Scheduler</string>
-    <string name="add">Add</string>
-    <string name="edit">Edit</string>
-    <string name="delete">Delete</string>
+    <string name="add">agregar</string>
+    <string name="edit">Editar</string>
+    <string name="delete">borrar</string>
     <string name="fa_plus_square">{fa-plus-square}</string>
     <string name="fa_trash">{fa-trash}</string>
     <string name="fa_filter">{fa-filter}</string>
     <string name="fa_pencil">{fa-pencil}</string>
     <string name="fa_plus">{fa-plus}</string>
     <string name="fa_arrows_v">{fa-arrows-v}</string>
-    <string name="cancel">Cancel</string>
+    <string name="cancel">Cancelar</string>
     <string name="ok">OK</string>
-    <string name="action_settings">Settings</string>
-    <string name="watchface_name">Name</string>
+    <string name="action_settings">Configuracion</string>
+    <string name="watchface_name">Nombre</string>
     <string name="watchface_uuid">App UUID</string>
-    <string name="auto_rotate">Auto Rotate</string>
-    <string name="enabled">Enabled</string>
-    <string name="sort">Sort</string>
-    <string name="import_help_header">Importing Watchfaces:</string>
-    <string name="import_help_text">1. Open up the Pebble app and click on support from the menu\n\n2. Click \"Contact Support\", then select \"Import Pebble App UUIDs\" from the list when prompted\n\nOR\n\nSend the support email to yourself and open the \"pebble.log.gz\" attachment with this application</string>
-    <string name="import_intent_label">Import Pebble App UUIDs</string>
-    <string name="random">Random</string>
+    <string name="auto_rotate">Auto Rotar</string>
+    <string name="enabled">Habilitado</string>
+    <string name="sort">Ordenar</string>
+    <string name="import_help_header">Importarndo Watchfaces:</string>
+    <string name="import_help_text">1. Abre la aplicacion Pebble y has click en Soporte Desde el Menu\n\n2. Click \"Contactar Soporte\", entonces selecciona \"Importar UUIDs de la aplicacion Pebble\" de la lista cuando se le solicite\n\nOR\n\nEnv�a el correo electr�nico de soporte a usted mismo y abra el adjunto \"pebble.log.gz\" con esta aplicacion</string>
+    <string name="import_intent_label">Importar UUIDs de la aplicacion Pebble</string>
+    <string name="random">Aleatorio</string>
 
     <string name="watchfaces">Watchfaces</string>
     <string name="schedule">Schedule</string>
@@ -36,7 +36,7 @@
     <string name="edit_schedule">Edit schedule</string>
     <string name="wrong_import_file_error">Wrong file, please open pebble.log.gz to import app info</string>
     <string name="import_complete">Import Complete</string>
-    <string name="view_import_message"><![CDATA[Would you like to see a list of all watchfaces & apps?]]></string>
+    <string name="view_import_message">Would you like to see a list of all watchfaces &amp; apps?</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -46,19 +46,20 @@
     <string name="delete_schedule">Delete This Schedule?</string>
     <string name="import_read_file_failed">Failed to read import file</string>
 
+    <!-- some work on the code is needed before these values support internationalisation
     <string-array name="time_units">
-        <item>Minutes</item>
-        <item>Hours</item>
-        <item>Days</item>
+        <item>Minutos</item>
+        <item>Horas</item>
+        <item>Dias</item>
     </string-array>
     <string-array name="day_units">
-        <item>Every Day</item>
-        <item>Monday</item>
-        <item>Tuesday</item>
-        <item>Wednesday</item>
-        <item>Thursday</item>
-        <item>Friday</item>
-        <item>Saturday</item>
-        <item>Sunday</item>
-    </string-array>
+        <item>Todos Los Dias</item>
+        <item>Lunes</item>
+        <item>Martes</item>
+        <item>Miercoles</item>
+        <item>Jueves</item>
+        <item>Viernes</item>
+        <item>Sabado</item>
+        <item>Domingo</item>
+    </string-array>!-->
 </resources>

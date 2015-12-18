@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.graphics.Color;
@@ -60,7 +61,6 @@ import com.mobeta.android.dslv.DragSortListView;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.components.io.fileselectors.FileInfo;
 import org.codehaus.plexus.components.io.fileselectors.FileSelector;
-import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -91,6 +91,7 @@ public class MainActivity extends Activity {
     private SharedPreferences prefs;
     private WatchfacesAdapter watchfacesAdapter;
     private ScheduleAdapter scheduleAdapter;
+    private Resources resources;
     NumberPicker autoSelect;
     Spinner autoSpinner;
 
@@ -104,11 +105,17 @@ public class MainActivity extends Activity {
         }
 
         prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        resources = getResources();
         manager = new Manager(MainActivity.this);
 
         // setup views
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
-        SimpleTabsAdapter pageAdapter = new SimpleTabsAdapter(new String[]{"Watchfaces","Schedule"}, new int[]{R.id.watchface_view, R.id.schedule_listview}, MainActivity.this, null);
+        SimpleTabsAdapter pageAdapter = new SimpleTabsAdapter(
+                new String[]{resources.getString(R.string.watchfaces), resources.getString(R.string.schedule)},
+                new int[]{R.id.watchface_view, R.id.schedule_listview},
+                MainActivity.this,
+                null
+        );
         viewPager.setAdapter(pageAdapter);
         LinearLayout tabLayout = (LinearLayout) findViewById(R.id.tab_widget);
         SimpleTabsWidget tabsIndicator = new SimpleTabsWidget(MainActivity.this, tabLayout);
@@ -134,21 +141,21 @@ public class MainActivity extends Activity {
                     uuid.setVisibility(View.VISIBLE);
                     final EditText name = (EditText) layout.findViewById(R.id.watchface_name);
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setTitle("Add a Watchface").setView(layout)
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    builder.setTitle(resources.getString(R.string.add_a_watchface)).setView(layout)
+                            .setNegativeButton(resources.getString(R.string.cancel), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     dialogInterface.dismiss();
                                 }
-                            }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            }).setPositiveButton(resources.getString(R.string.ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             if (name.getText().toString().equals("")) {
-                                Toast.makeText(MainActivity.this, "Please enter a name for the watchface", Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity.this, resources.getString(R.string.enter_watchface_name), Toast.LENGTH_LONG).show();
                                 return;
                             }
                             if (!Pattern.matches("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}", uuid.getText())) {
-                                Toast.makeText(MainActivity.this, "Please enter a valid UUID", Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity.this, resources.getString(R.string.enter_valid_uuid), Toast.LENGTH_LONG).show();
                                 return;
                             }
                             manager.setUuid(uuid.getText().toString(), name.getText().toString());
@@ -166,7 +173,7 @@ public class MainActivity extends Activity {
                         if (index>-1)
                             manager.setAutoScheduleCurrentIndex(index);
 
-                        Toast.makeText(MainActivity.this, "Watchface selected", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, resources.getString(R.string.watchface_selected), Toast.LENGTH_SHORT).show();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -191,7 +198,7 @@ public class MainActivity extends Activity {
                 ClipboardManager manager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 manager.setText(uuid);
                 // Show a message:
-                Toast.makeText(MainActivity.this, "Copied UUID to clipboard", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, resources.getString(R.string.uuid_copied), Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
@@ -211,7 +218,7 @@ public class MainActivity extends Activity {
 
                 if (position == scheduleList.getCount()-1) {
                     if (manager.getUuids().length()==0){
-                        Toast.makeText(MainActivity.this, "Add some watchfaces first", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, resources.getString(R.string.add_watchfaces_first), Toast.LENGTH_LONG).show();
                         return;
                     }
                     LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_schedule, parent, false);
@@ -224,13 +231,13 @@ public class MainActivity extends Activity {
                     final TimePicker timeselect = (TimePicker) layout.findViewById(R.id.time_selector);
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setTitle("Add schedule").setView(layout)
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    builder.setTitle(resources.getString(R.string.add_schedule)).setView(layout)
+                            .setNegativeButton(resources.getString(R.string.cancel), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     dialogInterface.dismiss();
                                 }
-                            }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            }).setPositiveButton(resources.getString(R.string.ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             Calendar date = Calendar.getInstance();
@@ -246,7 +253,7 @@ public class MainActivity extends Activity {
                             dialogInterface.dismiss();
                             scheduleAdapter.refreshSchedule();
                             if (watchselect.getSelectedItemPosition()==0 && manager.getUuidList().size()==0){
-                                Toast.makeText(MainActivity.this, "You don't have any watchfaces enabled for randomisation, check their checkbox in the list to enable", Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity.this, resources.getString(R.string.no_watchfaces_selected_error), Toast.LENGTH_LONG).show();
                             }
                         }
                     }).show();
@@ -273,7 +280,7 @@ public class MainActivity extends Activity {
                         JSONArray uuids = manager.getAutoSchedule().getJSONArray("uuids");
                         if (uuids.length() == 0) {
                             cb.setChecked(false);
-                            Toast.makeText(MainActivity.this, "Select some watchfaces first", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, resources.getString(R.string.select_watchfaces_first), Toast.LENGTH_LONG).show();
                             return;
                         }
                     } catch (JSONException e) {
@@ -385,7 +392,7 @@ public class MainActivity extends Activity {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
             if (position==0){
-                viewHolder.name.setText("Random");
+                viewHolder.name.setText(resources.getString(R.string.random));
                 return convertView;
             }
             JSONObject item = (JSONObject) getItem(position);
@@ -434,7 +441,7 @@ public class MainActivity extends Activity {
             if (position==0){
                 JSONObject json = new JSONObject();
                 try {
-                    json.put("name", "Random");
+                    json.put("name", resources.getString(R.string.random));
                     json.put("uuid", "0");
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -467,7 +474,7 @@ public class MainActivity extends Activity {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
             if (position==0){
-                viewHolder.name.setText("Random");
+                viewHolder.name.setText(resources.getString(R.string.random));
                 return convertView;
             }
             JSONObject item = (JSONObject) getItem(position);
@@ -532,13 +539,13 @@ public class MainActivity extends Activity {
         timeselect.setCurrentHour(date.get(Calendar.HOUR_OF_DAY));
         timeselect.setCurrentMinute(date.get(Calendar.MINUTE));
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("Edit schedule").setView(layout)
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setTitle(resources.getString(R.string.edit_schedule)).setView(layout)
+                .setNegativeButton(resources.getString(R.string.cancel), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
                     }
-                }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                }).setPositiveButton(resources.getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 date.set(Calendar.HOUR_OF_DAY, timeselect.getCurrentHour());
@@ -567,7 +574,7 @@ public class MainActivity extends Activity {
             try {
                 if (metaCursor.moveToFirst()) {
                     if (!metaCursor.getString(0).equals("pebble.log.gz")){
-                        Toast.makeText(MainActivity.this, "Wrong file, please open pebble.log.gz to import app info", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, resources.getString(R.string.wrong_import_file_error), Toast.LENGTH_LONG).show();
                         return false;
                     }
                 }
@@ -595,7 +602,7 @@ public class MainActivity extends Activity {
                 }
                 // did we get a valid file?
                 if (!valid) {
-                    Toast.makeText(MainActivity.this, "Wrong file, please open pebble.log.gz to import app info", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, resources.getString(R.string.wrong_import_file_error), Toast.LENGTH_LONG).show();
                     return;
                 }
                 break;
@@ -603,7 +610,6 @@ public class MainActivity extends Activity {
                 // validate name
                 file = getIntent().getData();
                 if (!checkPebbleLogFile(file)) {
-                    Toast.makeText(MainActivity.this, "Wrong file, please open pebble.log.gz to import app info", Toast.LENGTH_LONG).show();
                     return;
                 }
                 break;
@@ -613,7 +619,7 @@ public class MainActivity extends Activity {
         try {
             // prepare to unzip file from archive
             final ZipUnArchiver ua = new ZipUnArchiver(); // although .gz, it seems to be zip encoded
-            ua.enableLogging(new ConsoleLogger(ConsoleLogger.LEVEL_DEBUG, "Logger"));
+            //ua.enableLogging(new ConsoleLogger(ConsoleLogger.LEVEL_DEBUG, "Logger"));
             ua.setFileSelectors(new FileSelector[]{
                     new FileSelector() {
                         @Override
@@ -624,6 +630,10 @@ public class MainActivity extends Activity {
             });
             // copy the archive to a temp location; the plexus-archive library cannot work with an output stream provided by content provider
             InputStream is = this.getContentResolver().openInputStream(file);
+            if (is==null){
+                Toast.makeText(MainActivity.this, resources.getString(R.string.import_read_file_failed), Toast.LENGTH_LONG).show();
+                return;
+            }
             File destarchive = new File(this.getCacheDir(), "pebble.log.gz");
             FileOutputStream f = new FileOutputStream(destarchive);
             byte[] buffer = new byte[1024];
@@ -663,9 +673,9 @@ public class MainActivity extends Activity {
 
     private void doShowImportDialog(final String applist){
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("Import Complete");
-        builder.setMessage("Would you like to see a list of all watchfaces & apps?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder.setTitle(resources.getString(R.string.import_complete));
+        builder.setMessage(resources.getString(R.string.view_import_message));
+        builder.setPositiveButton(resources.getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
@@ -680,18 +690,18 @@ public class MainActivity extends Activity {
                         TextView showTextParam = (TextView) v;
                         manager.setText(showTextParam.getText());
                         // Show a message:
-                        Toast.makeText(v.getContext(), "Copied to clipboard", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(v.getContext(), resources.getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show();
                         return true;
                     }
                 });
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setView(showText);
-                builder.setTitle("Locker Applications");
+                builder.setTitle(resources.getString(R.string.locker_applications));
                 builder.setCancelable(true);
                 builder.create().show();
             }
         });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(resources.getString(R.string.no), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
@@ -803,7 +813,7 @@ public class MainActivity extends Activity {
 
         public void moveWatchfaceOrder(int from, int to){
             if (to>=sortIndex.size()) return;
-            Log.w(getPackageName(), "Sorting: moving "+from+" to "+to);
+            //Log.w(getPackageName(), "Sorting: moving "+from+" to "+to);
             String uuid = sortIndex.get(from);
             sortIndex.remove(from);
             sortIndex.add(to, uuid);
@@ -820,7 +830,7 @@ public class MainActivity extends Activity {
                 viewHolder = new ViewHolder();
                 if (position == sortIndex.size()) {
                     convertView = inflater.inflate(R.layout.listitem_add, parent, false);
-                    ((TextView) convertView.findViewById(R.id.add_text)).setText("Add Watchface");
+                    ((TextView) convertView.findViewById(R.id.add_text)).setText(resources.getString(R.string.add_a_watchface));
                 } else {
                     convertView = inflater.inflate(R.layout.watchface_list_row, parent, false);
                     viewHolder.name = (TextView) convertView.findViewById(R.id.watchface_name);
@@ -851,8 +861,8 @@ public class MainActivity extends Activity {
                     @Override
                     public void onClick(View v) {
                         AlertDialog.Builder bulder = new AlertDialog.Builder(MainActivity.this);
-                        bulder.setTitle("Delete").setMessage("Delete this Watchface?")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        bulder.setTitle(resources.getString(R.string.delete)).setMessage(resources.getString(R.string.delete_watchface))
+                        .setPositiveButton(resources.getString(R.string.ok), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 manager.removeUuid(uuid);
@@ -861,7 +871,7 @@ public class MainActivity extends Activity {
                                 dialog.dismiss();
                             }
                         })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        .setNegativeButton(resources.getString(R.string.cancel), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
@@ -877,17 +887,17 @@ public class MainActivity extends Activity {
                         name.setText(displayName);
                         name.selectAll();
                         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                        builder.setTitle("Edit Watchface").setView(layout)
-                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        builder.setTitle(resources.getString(R.string.edit_watchface)).setView(layout)
+                                .setNegativeButton(resources.getString(R.string.cancel), new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
                                         dialogInterface.dismiss();
                                     }
-                                }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                }).setPositiveButton(resources.getString(R.string.ok), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 if (name.getText().toString().equals("")) {
-                                    Toast.makeText(MainActivity.this, "Please enter a name for the watchface", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(MainActivity.this, resources.getString(R.string.enter_watchface_name), Toast.LENGTH_LONG).show();
                                     return;
                                 }
                                 manager.setUuid(uuid, name.getText().toString());
@@ -905,10 +915,10 @@ public class MainActivity extends Activity {
                         if (isChecked){
                             if (!autoUuids.contains(uuid))
                                 autoUuids.add(uuid);
-                            Log.w(getPackageName(), "Adding "+uuid+" to auto rotate");
+                            //Log.w(getPackageName(), "Adding "+uuid+" to auto rotate");
                         } else {
                             autoUuids.remove(uuid);
-                            Log.w(getPackageName(), "Removing " + uuid + " from auto rotate");
+                            //Log.w(getPackageName(), "Removing " + uuid + " from auto rotate");
                         }
                         saveAutoUuids();
                     }
@@ -993,7 +1003,7 @@ public class MainActivity extends Activity {
                 viewHolder = new ViewHolder();
                 if (position == scheduleList.size()) {
                     convertView = inflater.inflate(R.layout.listitem_add, parent, false);
-                    ((TextView) convertView.findViewById(R.id.add_text)).setText("Add To Schedule");
+                    ((TextView) convertView.findViewById(R.id.add_text)).setText(resources.getString(R.string.add_schedule));
                 } else {
                     convertView = inflater.inflate(R.layout.schedule_list_row, parent, false);
                     viewHolder.name = (TextView) convertView.findViewById(R.id.schedule_watchface_name);
@@ -1019,7 +1029,7 @@ public class MainActivity extends Activity {
                     SimpleDateFormat sdf = new SimpleDateFormat("hh:mma", Locale.ENGLISH);
                     displayTimeTemp = sdf.format(date)+" "+Manager.getDayOfWeekLabel(day);
                     if (uuid.equals("0")) {
-                        displayNameTemp = "Random";
+                        displayNameTemp = resources.getString(R.string.random);
                     } else {
                         displayNameTemp = manager.getUuids().getJSONObject(uuid).getString("name");
                     }
@@ -1039,8 +1049,8 @@ public class MainActivity extends Activity {
                     @Override
                     public void onClick(View v) {
                         AlertDialog.Builder bulder = new AlertDialog.Builder(MainActivity.this);
-                        bulder.setTitle("Delete").setMessage("Delete this Schedule?")
-                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        bulder.setTitle(resources.getString(R.string.delete)).setMessage(resources.getString(R.string.delete_schedule))
+                                .setPositiveButton(resources.getString(R.string.ok), new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         manager.removeScheduleItem(key);
@@ -1048,7 +1058,7 @@ public class MainActivity extends Activity {
                                         dialog.dismiss();
                                     }
                                 })
-                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                .setNegativeButton(resources.getString(R.string.cancel), new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         dialog.dismiss();
