@@ -3,12 +3,6 @@
     <string name="add">agregar</string>
     <string name="edit">Editar</string>
     <string name="delete">borrar</string>
-    <string name="fa_plus_square">{fa-plus-square}</string>
-    <string name="fa_trash">{fa-trash}</string>
-    <string name="fa_filter">{fa-filter}</string>
-    <string name="fa_pencil">{fa-pencil}</string>
-    <string name="fa_plus">{fa-plus}</string>
-    <string name="fa_arrows_v">{fa-arrows-v}</string>
     <string name="cancel">Cancelar</string>
     <string name="ok">OK</string>
     <string name="action_settings">Configuracion</string>
@@ -24,7 +18,7 @@
 
     <string name="watchfaces">Watchfaces</string>
     <string name="schedule">Schedule</string>
-    <string name="add_a_watchface">Add A Watchface</string>
+    <string name="add_a_watchface">Add Watchface</string>
     <string name="enter_watchface_name">Please enter a name for the watchface</string>
     <string name="enter_valid_uuid">Please enter a valid UUID</string>
     <string name="watchface_selected">Watchface selected</string>

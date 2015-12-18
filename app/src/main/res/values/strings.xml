@@ -3,12 +3,12 @@
     <string name="add">Add</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
-    <string name="fa_plus_square">{fa-plus-square}</string>
-    <string name="fa_trash">{fa-trash}</string>
-    <string name="fa_filter">{fa-filter}</string>
-    <string name="fa_pencil">{fa-pencil}</string>
-    <string name="fa_plus">{fa-plus}</string>
-    <string name="fa_arrows_v">{fa-arrows-v}</string>
+    <string name="fa_plus_square" translatable="false">{fa-plus-square}</string>
+    <string name="fa_trash" translatable="false">{fa-trash}</string>
+    <string name="fa_filter" translatable="false">{fa-filter}</string>
+    <string name="fa_pencil" translatable="false">{fa-pencil}</string>
+    <string name="fa_plus" translatable="false">{fa-plus}</string>
+    <string name="fa_arrows_v" translatable="false">{fa-arrows-v}</string>
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="action_settings">Settings</string>
@@ -24,7 +24,7 @@
 
     <string name="watchfaces">Watchfaces</string>
     <string name="schedule">Schedule</string>
-    <string name="add_a_watchface">Add A Watchface</string>
+    <string name="add_a_watchface">Add Watchface</string>
     <string name="enter_watchface_name">Please enter a name for the watchface</string>
     <string name="enter_valid_uuid">Please enter a valid UUID</string>
     <string name="watchface_selected">Watchface selected</string>
@@ -36,7 +36,7 @@
     <string name="edit_schedule">Edit schedule</string>
     <string name="wrong_import_file_error">Wrong file, please open pebble.log.gz to import app info</string>
     <string name="import_complete">Import Complete</string>
-    <string name="view_import_message"><![CDATA[Would you like to see a list of all watchfaces & apps?]]></string>
+    <string name="view_import_message">Would you like to see a list of all watchfaces &amp; apps?</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
