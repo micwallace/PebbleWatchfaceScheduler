@@ -61,6 +61,7 @@ import com.mobeta.android.dslv.DragSortListView;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.components.io.fileselectors.FileInfo;
 import org.codehaus.plexus.components.io.fileselectors.FileSelector;
+import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -619,7 +620,7 @@ public class MainActivity extends Activity {
         try {
             // prepare to unzip file from archive
             final ZipUnArchiver ua = new ZipUnArchiver(); // although .gz, it seems to be zip encoded
-            //ua.enableLogging(new ConsoleLogger(ConsoleLogger.LEVEL_DEBUG, "Logger"));
+            ua.enableLogging(new ConsoleLogger(ConsoleLogger.LEVEL_DEBUG, "Logger"));
             ua.setFileSelectors(new FileSelector[]{
                     new FileSelector() {
                         @Override
