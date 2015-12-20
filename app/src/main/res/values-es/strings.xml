@@ -15,36 +15,33 @@
     <string name="import_help_text">1. Abre la aplicacion Pebble y has click en Soporte Desde el Menu\n\n2. Click \"Contactar Soporte\", entonces selecciona \"Importar UUIDs de la aplicacion Pebble\" de la lista cuando se le solicite\n\nOR\n\nEnv�a el correo electr�nico de soporte a usted mismo y abra el adjunto \"pebble.log.gz\" con esta aplicacion</string>
     <string name="import_intent_label">Importar UUIDs de la aplicacion Pebble</string>
     <string name="random">Aleatorio</string>
-
     <string name="watchfaces">Watchfaces</string>
-    <string name="schedule">Schedule</string>
-    <string name="add_a_watchface">Add Watchface</string>
-    <string name="enter_watchface_name">Please enter a name for the watchface</string>
-    <string name="enter_valid_uuid">Please enter a valid UUID</string>
-    <string name="watchface_selected">Watchface selected</string>
-    <string name="uuid_copied">Copied UUID to clipboard</string>
-    <string name="add_watchfaces_first">Add some watchfaces first</string>
-    <string name="add_schedule">Add Schedule</string>
-    <string name="no_watchfaces_selected_error">You don\'t have any watchfaces enabled for randomisation, check their checkbox in the list to enable</string>
-    <string name="select_watchfaces_first">Select some watchfaces first</string>
-    <string name="edit_schedule">Edit schedule</string>
-    <string name="wrong_import_file_error">Wrong file, please open pebble.log.gz to import app info</string>
-    <string name="import_complete">Import Complete</string>
-    <string name="view_import_message">Would you like to see a list of all watchfaces &amp; apps?</string>
-    <string name="copied_to_clipboard">Copied to clipboard</string>
-    <string name="yes">Yes</string>
+    <string name="schedule">Programar</string>
+    <string name="add_a_watchface">Agregar Watchface</string>
+    <string name="enter_watchface_name">Por favor escriba el nombre del watchface</string>
+    <string name="enter_valid_uuid">Por favor ingrese un UUID valido</string>
+    <string name="watchface_selected">Watchface seleccionado</string>
+    <string name="uuid_copied">UUID copiado al clipboard</string>
+    <string name="add_watchfaces_first">Agregar algunos watchfaces al principio</string>
+    <string name="add_schedule">Agregar Programación</string>
+    <string name="no_watchfaces_selected_error">Usted no\'tiene ningún watchfaces habilitados para la asignación al azar, marque la casilla de la lista para activarlos</string>
+    <string name="select_watchfaces_first">Primero selecciona algún watchfaces</string>
+    <string name="edit_schedule">Editar la Programación</string>
+    <string name="wrong_import_file_error">Archivo Incorrecto, por favor abra el archivo pebble.log.gz para importar la informacion de la aplicacion</string>
+    <string name="import_complete">Importacion Completada</string>
+    <string name="view_import_message">Te gustaría ver la lista de todos los watchfaces &amp; apps?</string>
+    <string name="copied_to_clipboard">Copiado al clipboard</string>
+    <string name="yes">Si</string>
     <string name="no">No</string>
-    <string name="locker_applications">Locker Applications</string>
-    <string name="delete_watchface">Delete this Watchface?</string>
-    <string name="edit_watchface">Edit Watchface</string>
-    <string name="delete_schedule">Delete This Schedule?</string>
-    <string name="import_read_file_failed">Failed to read import file</string>
-
-    <!-- some work on the code is needed before these values support internationalisation
+    <string name="locker_applications">Aplicacions Bloqueadas</string>
+    <string name="delete_watchface">Borrar este Watchface?</string>
+    <string name="edit_watchface">Editar Watchface</string>
+    <string name="delete_schedule">DBorrar esta programación?</string>
+    <string name="import_read_file_failed">Error al leer el archivo de importación</string>
     <string-array name="time_units">
         <item>Minutos</item>
         <item>Horas</item>
-        <item>Dias</item>
+        <item>Días</item>
     </string-array>
     <string-array name="day_units">
         <item>Todos Los Dias</item>
@@ -55,5 +52,5 @@
         <item>Viernes</item>
         <item>Sabado</item>
         <item>Domingo</item>
-    </string-array>!-->
+    </string-array>
 </resources>

@@ -349,32 +349,9 @@ public class Manager {
         return alarmDate;
     }
 
-    public static int getDayOfWeekNumber(String day){
-        int daynum = 0;
-        switch (day.toLowerCase()){
-            case "sunday": daynum = 1; break;
-            case "monday": daynum = 2; break;
-            case "tuesday": daynum = 3; break;
-            case "wednesday": daynum = 4; break;
-            case "thursday": daynum = 5; break;
-            case "friday": daynum = 6; break;
-            case "saturday": daynum = 7; break;
-        }
-        return daynum;
-    }
-
-    public static String getDayOfWeekLabel(int daynum){
-        String day = "";
-        switch (daynum){
-            case 0: day = "Every Day"; break;
-            case 1: day = "Sunday"; break;
-            case 2: day = "Monday"; break;
-            case 3: day = "Tuesday"; break;
-            case 4: day = "Wednesday"; break;
-            case 5: day = "Thursday"; break;
-            case 6: day = "Friday"; break;
-            case 7: day = "Saturday"; break;
-        }
-        return day;
+    public static String getDayOfWeekLabel(Context context, int daynum){
+        String[] daysofweek = context.getResources().getStringArray(R.array.day_units);
+        if (daynum<0 || daynum>daysofweek.length) return "";
+        return daysofweek[daynum];
     }
 }

@@ -75,7 +75,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -247,7 +246,7 @@ public class MainActivity extends Activity {
                             date.set(Calendar.SECOND, 0);
                             JSONObject watchface = (JSONObject) watchselect.getSelectedItem();
                             try {
-                                manager.setScheduleItem(String.valueOf(System.currentTimeMillis()), watchface.getString("uuid"), date, Manager.getDayOfWeekNumber((String) dayselect.getSelectedItem()));
+                                manager.setScheduleItem(String.valueOf(System.currentTimeMillis()), watchface.getString("uuid"), date, dayselect.getSelectedItemPosition());
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -326,12 +325,34 @@ public class MainActivity extends Activity {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.time_units, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         autoSpinner.setAdapter(adapter);
-        autoSpinner.setSelection(Arrays.asList(getResources().getStringArray(R.array.time_units)).indexOf(prefs.getString("autoScheduleUnits", "Hours")), false);
+        //
+        try {
+            // update for compatability: catch class cast exception thrown here and update preference to index (intl. support)
+            prefs.getInt("autoScheduleUnits", -1);
+        } catch (Exception ex){
+            SharedPreferences.Editor editor = prefs.edit();
+            int newvalue = 0;
+            switch (prefs.getString("autoScheduleUnits", "Hours")){
+                case "Minutes": // Minutes
+                    newvalue = 0;
+                    break;
+                case "Hours": // Hours
+                    newvalue = 1;
+                    break;
+                case "Days": // Days
+                    newvalue = 2;
+                    break;
+            }
+            editor.putInt("autoScheduleUnits", newvalue);
+            editor.commit();
+        }
+        autoSpinner.setSelection(prefs.getInt("autoScheduleUnits", 1), false);
         autoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 saveAutoInterval();
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
@@ -346,24 +367,25 @@ public class MainActivity extends Activity {
     private void saveAutoInterval(){
         SharedPreferences.Editor editor = prefs.edit();
         int number = autoSelect.getValue();
-        String unit = (String) autoSpinner.getSelectedItem();
+        // use position for internationalisation support (strings must be in same order accross intl. strings.xml)
+        int unit = autoSpinner.getSelectedItemPosition();
         // save prefs
         editor.putInt("autoScheduleQty", number);
-        editor.putString("autoScheduleUnits", unit);
+        editor.putInt("autoScheduleUnits", unit);
         editor.apply();
         // works out millis and set timer
         int unitmillis = 60000;
         switch (unit){
-            case "Day":
-                unitmillis = 86400000;
-                break;
-            case "Hours":
-                unitmillis = 3600000;
-                break;
-            case "Minutes":
+            case 0: // Minutes
                 unitmillis = 60000;
                 break;
-            case "Seconds":
+            case 1: // Hours
+                unitmillis = 3600000;
+                break;
+            case 2: // Days
+                unitmillis = 86400000;
+                break;
+            case 3: // seconds; debugging only
                 unitmillis = 1000;
                 break;
         }
@@ -414,7 +436,7 @@ public class MainActivity extends Activity {
             for (int i = 0; i<list.size(); i++){
                 try {
                     String itemuuid = list.get(i).getString("uuid");
-                    if (uuid.equals(itemuuid)) return i;
+                    if (uuid.equals(itemuuid)) return i+1;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -530,9 +552,7 @@ public class MainActivity extends Activity {
             key = scheduleObj.getString("key");
             uuid = scheduleObj.getString("uuid");
             watchselect.setSelection(spinnerAdapter.getUuidIndex(uuid));
-            String selectedLabel = Manager.getDayOfWeekLabel((scheduleObj.has("day")?scheduleObj.getInt("day"):0));
-            int itemIndex = Arrays.asList(getResources().getStringArray(R.array.day_units)).indexOf(selectedLabel);
-            dayselect.setSelection(itemIndex);
+            dayselect.setSelection(scheduleObj.has("day")?scheduleObj.getInt("day"):0);
         } catch (JSONException e) {
             e.printStackTrace();
             return;
@@ -560,7 +580,7 @@ public class MainActivity extends Activity {
                     e.printStackTrace();
                     newuuid = uuid;
                 }
-                manager.setScheduleItem(key, newuuid, date, Manager.getDayOfWeekNumber((String) dayselect.getSelectedItem()));
+                manager.setScheduleItem(key, newuuid, date, dayselect.getSelectedItemPosition());
                 dialogInterface.dismiss();
                 scheduleAdapter.refreshSchedule();
             }
@@ -1028,7 +1048,7 @@ public class MainActivity extends Activity {
                     day = scheduleObj.getInt("day");
                     Date date = new Date(time);
                     SimpleDateFormat sdf = new SimpleDateFormat("hh:mma", Locale.ENGLISH);
-                    displayTimeTemp = sdf.format(date)+" "+Manager.getDayOfWeekLabel(day);
+                    displayTimeTemp = sdf.format(date)+" "+Manager.getDayOfWeekLabel(MainActivity.this, day);
                     if (uuid.equals("0")) {
                         displayNameTemp = resources.getString(R.string.random);
                     } else {
