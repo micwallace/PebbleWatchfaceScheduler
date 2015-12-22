@@ -4,16 +4,16 @@
     <string name="edit">Editar</string>
     <string name="delete">borrar</string>
     <string name="cancel">Cancelar</string>
-    <string name="ok">OK</string>
-    <string name="action_settings">Configuracion</string>
+    <string name="ok">SI</string>
+    <string name="action_settings"><![CDATA[Configuración]]></string>
     <string name="watchface_name">Nombre</string>
     <string name="watchface_uuid">App UUID</string>
     <string name="auto_rotate">Auto Rotar</string>
     <string name="enabled">Habilitado</string>
     <string name="sort">Ordenar</string>
     <string name="import_help_header">Importando Watchfaces:</string>
-    <string name="import_help_text"><![CDATA[1. Abre la aplicacion Pebble y has click en Soporte Desde el Menu\n\n2. Click \"Contactar Soporte\", entonces selecciona \"Importar UUIDs de la aplicacion Pebble\" de la lista cuando se le solicite\n\nOR\n\nEnviar el correo electronico de soporte a usted mismo y abra el adjunto \"pebble.log.gz\" con esta aplicacion]]></string>
-    <string name="import_intent_label">Importar UUIDs de la aplicacion Pebble</string>
+    <string name="import_help_text"><![CDATA[1. Abre la aplicacion Pebble y has click en \"Support\" Desde el Menu\n\n2. Click \"Contact Support\", entonces selecciona \"Importar UUIDs de la aplicacion Pebble\" de la lista cuando se le solicite\n\nO\n\nEnviar el correo electronico de soporte a usted mismo y abra el adjunto \"pebble.log.gz\" con esta aplicacion]]></string>
+    <string name="import_intent_label"><![CDATA[Importar UUIDs desde la aplicación Pebble]]></string>
     <string name="random">Aleatorio</string>
     <string name="watchfaces">Watchfaces</string>
     <string name="schedule">Programar</string>
@@ -23,17 +23,17 @@
     <string name="watchface_selected">Watchface seleccionado</string>
     <string name="uuid_copied">UUID copiado al clipboard</string>
     <string name="add_watchfaces_first">Agregar algunos watchfaces al principio</string>
-    <string name="add_schedule">Agregar Programación</string>
+    <string name="add_schedule"><![CDATA[Agregar Programación]]></string>
     <string name="no_watchfaces_selected_error"><![CDATA[Usted no\'tiene ningún watchfaces habilitados para la asignación al azar, marque la casilla de la lista para activarlos]]></string>
     <string name="select_watchfaces_first"><![CDATA[Primero selecciona algún watchfaces]]></string>
     <string name="edit_schedule"><![CDATA[Editar la Programación]]></string>
-    <string name="wrong_import_file_error">Archivo Incorrecto, por favor abra el archivo pebble.log.gz para importar la informacion de la aplicacion</string>
-    <string name="import_complete">Importacion Completada</string>
+    <string name="wrong_import_file_error"><![CDATA[Archivo Incorrecto, por favor abra el archivo pebble.log.gz para importar la información a la aplicación]]></string>
+    <string name="import_complete"><![CDATA[Importación Completada]]></string>
     <string name="view_import_message"><![CDATA[Te gustaría ver la lista de todos los watchfaces &amp; apps?]]></string>
     <string name="copied_to_clipboard">Copiado al clipboard</string>
     <string name="yes">Si</string>
     <string name="no">No</string>
-    <string name="locker_applications">Aplicacions Bloqueadas</string>
+    <string name="locker_applications">Aplicaciones Bloqueadas</string>
     <string name="delete_watchface">Borrar este Watchface?</string>
     <string name="edit_watchface">Editar Watchface</string>
     <string name="delete_schedule"><![CDATA[DBorrar esta programación?]]></string>
@@ -47,10 +47,10 @@
         <item><![CDATA[Todos Los Días]]></item>
         <item>Lunes</item>
         <item>Martes</item>
-        <item>Miercoles</item>
+        <item><![CDATA[Miércoles]]></item>
         <item>Jueves</item>
         <item>Viernes</item>
-        <item>Sabado</item>
+        <item><![CDATA[Sábado]]></item>
         <item>Domingo</item>
     </string-array>
 </resources>

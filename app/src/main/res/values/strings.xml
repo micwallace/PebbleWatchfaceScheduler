@@ -1,14 +1,16 @@
 <resources>
-    <string name="app_name">Watchface Scheduler</string>
-    <string name="add">Add</string>
-    <string name="edit">Edit</string>
-    <string name="delete">Delete</string>
+    <!-- internal resources: not translated -->
     <string name="fa_plus_square" translatable="false">{fa-plus-square}</string>
     <string name="fa_trash" translatable="false">{fa-trash}</string>
     <string name="fa_filter" translatable="false">{fa-filter}</string>
     <string name="fa_pencil" translatable="false">{fa-pencil}</string>
     <string name="fa_plus" translatable="false">{fa-plus}</string>
     <string name="fa_arrows_v" translatable="false">{fa-arrows-v}</string>
+    <!-- end internal resources -->
+    <string name="app_name">Watchface Scheduler</string>
+    <string name="add">Add</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="action_settings">Settings</string>
@@ -21,7 +23,6 @@
     <string name="import_help_text">1. Open up the Pebble app and click on support from the menu\n\n2. Click \"Contact Support\", then select \"Import Pebble App UUIDs\" from the list when prompted\n\nOR\n\nSend the support email to yourself and open the \"pebble.log.gz\" attachment with this application</string>
     <string name="import_intent_label">Import Pebble App UUIDs</string>
     <string name="random">Random</string>
-
     <string name="watchfaces">Watchfaces</string>
     <string name="schedule">Schedule</string>
     <string name="add_a_watchface">Add Watchface</string>
@@ -45,7 +46,6 @@
     <string name="edit_watchface">Edit Watchface</string>
     <string name="delete_schedule">Delete This Schedule?</string>
     <string name="import_read_file_failed">Failed to read import file</string>
-
     <string-array name="time_units">
         <item>Minutes</item>
         <item>Hours</item>
