@@ -1005,7 +1005,21 @@ public class MainActivity extends Activity {
                 @Override
                 public int compare(JSONObject s, JSONObject t1) {
                     try {
-                        return (int) (s.getLong("time")-t1.getLong("time"));
+                        if (s.getInt("day")==0)
+                            if (t1.getInt("day")==0){
+                                return (int) ((s.getLong("time") % (24*60*60*1000L)) - (t1.getLong("time") % (24*60*60*1000L)));
+                            } else {
+                                return Integer.MIN_VALUE;
+                            }
+                        Calendar date1 = Calendar.getInstance();
+                        date1.setTimeInMillis(s.getLong("time"));
+                        Calendar date2 = Calendar.getInstance();
+                        date2.setTimeInMillis(t1.getLong("time"));
+                        if (date1.get(Calendar.DAY_OF_WEEK)==date2.get(Calendar.DAY_OF_WEEK)){
+                            return (int) ((s.getLong("time") % (24*60*60*1000L)) - (t1.getLong("time") % (24*60*60*1000L)));
+                        } else {
+                            return (date1.get(Calendar.DAY_OF_WEEK)-date2.get(Calendar.DAY_OF_WEEK));
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                         return 0;

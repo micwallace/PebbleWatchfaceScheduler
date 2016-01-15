@@ -45,12 +45,12 @@
     </string-array>
     <string-array name="day_units">
         <item><![CDATA[Todos Los Días]]></item>
+        <item>Domingo</item>
         <item>Lunes</item>
         <item>Martes</item>
         <item><![CDATA[Miércoles]]></item>
         <item>Jueves</item>
         <item>Viernes</item>
         <item><![CDATA[Sábado]]></item>
-        <item>Domingo</item>
     </string-array>
 </resources>
