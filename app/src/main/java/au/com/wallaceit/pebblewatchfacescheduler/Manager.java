@@ -304,7 +304,7 @@ public class Manager {
     }
 
     private void cancelAlarmIntent(String key){
-        Intent alarmIntent = new Intent(context, ScheduleReceiver.class);
+        Intent alarmIntent = new Intent(context.getApplicationContext(), ScheduleReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context.getApplicationContext(), Long.valueOf(key).intValue(), alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
@@ -314,7 +314,7 @@ public class Manager {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(millis);
         Log.w("au.com.wallaceit", "Scheduling alarm "+key+" for "+cal.getTime().toString());
-        Intent alarmIntent = new Intent(context, ScheduleReceiver.class);
+        Intent alarmIntent = new Intent(context.getApplicationContext(), ScheduleReceiver.class);
         alarmIntent.putExtra("uuid", uuid);
         alarmIntent.putExtra("key", key);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context.getApplicationContext(), Long.valueOf(key).intValue(), alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
