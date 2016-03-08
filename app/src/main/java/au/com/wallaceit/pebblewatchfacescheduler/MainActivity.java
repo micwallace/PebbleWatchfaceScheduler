@@ -183,7 +183,7 @@ public class MainActivity extends Activity {
         watchfaceList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
+                if (position == watchfacesAdapter.getCount()-1) {
                     return true;
                 }
                 JSONObject jsonObject = watchfacesAdapter.getItem(position);

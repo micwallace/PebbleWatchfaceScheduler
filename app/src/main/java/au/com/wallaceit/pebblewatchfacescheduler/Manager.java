@@ -305,7 +305,7 @@ public class Manager {
 
     private void cancelAlarmIntent(String key){
         Intent alarmIntent = new Intent(context, ScheduleReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, Long.valueOf(key).intValue(), alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context.getApplicationContext(), Long.valueOf(key).intValue(), alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
     }
@@ -317,7 +317,7 @@ public class Manager {
         Intent alarmIntent = new Intent(context, ScheduleReceiver.class);
         alarmIntent.putExtra("uuid", uuid);
         alarmIntent.putExtra("key", key);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, Long.valueOf(key).intValue(), alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context.getApplicationContext(), Long.valueOf(key).intValue(), alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC_WAKEUP, millis, pendingIntent);
     }

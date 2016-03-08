@@ -20,6 +20,7 @@ package au.com.wallaceit.pebblewatchfacescheduler;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,6 +34,7 @@ public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         // reschedule on boot
+        //Log.w("au.com.wallaceit", "Received startup command, rescheduling watchface rotations");
         Manager manager = new Manager(context);
         JSONObject schedule = manager.getSchedule();
         Iterator i = schedule.keys();
