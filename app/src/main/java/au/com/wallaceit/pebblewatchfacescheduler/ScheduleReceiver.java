@@ -72,5 +72,7 @@ public class ScheduleReceiver extends BroadcastReceiver {
         // open watchface
         if (uuid!=null)
             manager.setPebbleWatchface(uuid);
+
+        manager.setLastChangeInfo(alarmKey.equals("0")?"auto":"scheduled", uuid==null?"null":uuid);
     }
 }

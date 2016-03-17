@@ -35,6 +35,7 @@ import android.provider.MediaStore;
 import android.support.v4.view.ViewPager;
 import android.text.ClipboardManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -216,8 +217,8 @@ public class MainActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
 
-                if (position == scheduleList.getCount()-1) {
-                    if (manager.getUuids().length()==0){
+                if (position == scheduleList.getCount() - 1) {
+                    if (manager.getUuids().length() == 0) {
                         Toast.makeText(MainActivity.this, resources.getString(R.string.add_watchfaces_first), Toast.LENGTH_LONG).show();
                         return;
                     }
@@ -252,7 +253,7 @@ public class MainActivity extends Activity {
                             }
                             dialogInterface.dismiss();
                             scheduleAdapter.refreshSchedule();
-                            if (watchselect.getSelectedItemPosition()==0 && manager.getUuidList().size()==0){
+                            if (watchselect.getSelectedItemPosition() == 0 && manager.getUuidList().size() == 0) {
                                 Toast.makeText(MainActivity.this, resources.getString(R.string.no_watchfaces_selected_error), Toast.LENGTH_LONG).show();
                             }
                         }
@@ -325,28 +326,28 @@ public class MainActivity extends Activity {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.time_units, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         autoSpinner.setAdapter(adapter);
-        //
+        int autoUnits;
         try {
             // update for compatability: catch class cast exception thrown here and update preference to index (intl. support)
-            prefs.getInt("autoScheduleUnits", -1);
+            autoUnits = prefs.getInt("autoScheduleUnits", 1);
         } catch (Exception ex){
             SharedPreferences.Editor editor = prefs.edit();
-            int newvalue = 0;
+            autoUnits = 0;
             switch (prefs.getString("autoScheduleUnits", "Hours")){
                 case "Minutes": // Minutes
-                    newvalue = 0;
+                    autoUnits = 0;
                     break;
                 case "Hours": // Hours
-                    newvalue = 1;
+                    autoUnits = 1;
                     break;
                 case "Days": // Days
-                    newvalue = 2;
+                    autoUnits = 2;
                     break;
             }
-            editor.putInt("autoScheduleUnits", newvalue);
-            editor.commit();
+            editor.putInt("autoScheduleUnits", autoUnits);
+            editor.apply();
         }
-        autoSpinner.setSelection(prefs.getInt("autoScheduleUnits", 1), false);
+        autoSpinner.setSelection(autoUnits, false);
         autoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -362,6 +363,15 @@ public class MainActivity extends Activity {
         if ((getIntent().getAction().equals(Intent.ACTION_VIEW) && getIntent().getData()!=null) || (getIntent().getAction().equals(Intent.ACTION_SEND_MULTIPLE))){
             doUUIDImport();
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) || (keyCode == KeyEvent.KEYCODE_VOLUME_UP)) {
+            Toast.makeText(MainActivity.this, "Last Change: "+manager.getLastChangeInfo(), Toast.LENGTH_LONG).show();
+            return true;
+        } else
+            return super.onKeyDown(keyCode, event);
     }
 
     private void saveAutoInterval(){

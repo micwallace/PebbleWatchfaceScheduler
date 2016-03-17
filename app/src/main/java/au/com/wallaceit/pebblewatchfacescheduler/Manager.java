@@ -33,6 +33,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.UUID;
@@ -337,6 +338,32 @@ public class Manager {
 
     private void saveAutoSchedule(){
         preferences.edit().putString("autoSchedule", autoSchedule.toString()).apply();
+    }
+
+    public void setLastChangeInfo(String type, String uuid){
+        JSONObject data = new JSONObject();
+        try {
+            data.put("type", type);
+            data.put("time", Calendar.getInstance().getTimeInMillis());
+            data.put("uuid", uuid);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        preferences.edit().putString("lastChange", data.toString()).apply();
+    }
+
+    public String getLastChangeInfo(){
+        try {
+            JSONObject data = new JSONObject(preferences.getString("lastChange", "{}"));
+            if (data.has("type")){
+                Date time = new Date(data.getLong("time"));
+                String timeStr = time.toString();
+                return data.getString("type")+" change at "+timeStr+" ("+data.getString("uuid")+")";
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return "no record";
     }
 
     public static Calendar nextDayOfWeek(int dow, Calendar alarmDate) {
