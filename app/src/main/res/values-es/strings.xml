@@ -12,7 +12,7 @@
     <string name="enabled">Habilitado</string>
     <string name="sort">Ordenar</string>
     <string name="import_help_header">Importando Watchfaces:</string>
-    <string name="import_help_text"><![CDATA[1. Abre la aplicacion Pebble y has click en \"Support\" Desde el Menu\n\n2. Click \"Contact Support\", entonces selecciona \"Importar UUIDs de la aplicacion Pebble\" de la lista cuando se le solicite\n\nO\n\nEnviar el correo electronico de soporte a usted mismo y abra el adjunto \"pebble.log.gz\" con esta aplicacion]]></string>
+    <string name="import_help_text"><![CDATA[1. Abre la aplicacion Pebble y has click en \"Support\" Desde el Menu\n\n2. Haga clic en \"Contacto Soporte\", seleccione "otro" como la categoría y haga clic en OK, dejando la descripción en blanco. A continuación, se genera el correo electrónico de apoyo.\n\n3. Selecciona \"Importar UUIDs de la aplicacion Pebble\" de la lista cuando se le solicite\n\nO\n\nEnviar el correo electronico de soporte a usted mismo y abra el adjunto \"pebble.log.gz\" con esta aplicacion]]></string>
     <string name="import_intent_label"><![CDATA[Importar UUIDs desde la aplicación Pebble]]></string>
     <string name="random">Aleatorio</string>
     <string name="watchfaces">Watchfaces</string>
