@@ -44,7 +44,6 @@
         <item><![CDATA[Días]]></item>
     </string-array>
     <string-array name="day_units">
-        <item><![CDATA[Todos Los Días]]></item>
         <item>Domingo</item>
         <item>Lunes</item>
         <item>Martes</item>

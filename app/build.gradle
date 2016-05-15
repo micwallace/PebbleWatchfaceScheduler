@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
+    compileSdkVersion 23
     buildToolsVersion "22.0.1"
 
     defaultConfig {
         applicationId "au.com.wallaceit.pebblewatchfacescheduler"
-        minSdkVersion 14
-        targetSdkVersion 22
-        versionCode 14
-        versionName "1.28"
+        minSdkVersion 15
+        targetSdkVersion 23
+        versionCode 15
+        versionName "1.30"
     }
     buildTypes {
         release {
@@ -24,10 +24,11 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:22.1.1'
+    compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.getpebble:pebblekit:3.0.0'
     compile 'org.codehaus.plexus:plexus-archiver:2.1'
     compile 'org.robolectric:android-libcore:4.3_r2.robolectric-0'
     compile 'com.joanzapata.android:android-iconify:1.0.9'
     compile 'asia.ivity.android:drag-sort-listview:1.0'
+    compile 'io.apptik.widget:multiselectspinner:1.0.11'
 }

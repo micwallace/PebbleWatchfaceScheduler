@@ -133,24 +133,28 @@ public class Manager {
         return scheduleList;
     }
 
-    public void setScheduleItem(String key, String uuid, Calendar time, int dayOfWeek){
+    public void setScheduleItem(String key, String uuid, Calendar time, JSONArray daysOfWeek){
         // if day of week selected, adjust to that day
         long millis;
-        if (dayOfWeek==0) {
+
+        int nextDayOfWeek = getNextScheduledDay(daysOfWeek);
+
+        if (nextDayOfWeek==0) {
             millis = time.getTimeInMillis();
             if (millis<Calendar.getInstance().getTimeInMillis()){ // if time has past, schedule for the next day
                 time.add(Calendar.DAY_OF_YEAR, 1);
                 millis = time.getTimeInMillis(); // add a day
             }
         } else {
-            millis = Manager.nextDayOfWeek(dayOfWeek, time).getTimeInMillis();
+            millis = Manager.nextDayOfWeek(nextDayOfWeek, time).getTimeInMillis();
         }
 
         JSONObject scheduleObj = new JSONObject();
         try {
             scheduleObj.put("uuid", uuid);
             scheduleObj.put("time", millis);
-            scheduleObj.put("day", dayOfWeek);
+            scheduleObj.put("days", daysOfWeek);
+            scheduleObj.remove("day"); // remove legacy config
             schedule.put(key, scheduleObj);
             saveSchedule();
             scheduleAlarmIntent(key, uuid, millis);
@@ -171,15 +175,24 @@ public class Manager {
             JSONObject scheduleObj = schedule.getJSONObject(key);
             String uuid = scheduleObj.getString("uuid");
             Long time = scheduleObj.getLong("time");
-            int dayOfWeek = scheduleObj.has("day")?scheduleObj.getInt("day"):0;
+
+            int nextDayOfWeek;
+            if (!scheduleObj.has("days")){
+                // handle legacy value
+                nextDayOfWeek = scheduleObj.has("day")?scheduleObj.getInt("day"):0;
+            } else {
+                JSONArray daysOfWeek = scheduleObj.getJSONArray("days");
+                nextDayOfWeek = getNextScheduledDay(daysOfWeek);
+            }
+
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(time);
-            if (dayOfWeek==0) {
+            if (nextDayOfWeek==0) {
                 calendar.add(Calendar.DAY_OF_YEAR, 1);
                 time = calendar.getTimeInMillis(); // add a day
             } else {
                 // set for the next week on the specified day
-                time = Manager.nextDayOfWeek(dayOfWeek, calendar).getTimeInMillis();
+                time = Manager.nextDayOfWeek(nextDayOfWeek, calendar).getTimeInMillis();
             }
             scheduleObj.put("time", time);
             schedule.put(key, scheduleObj);
@@ -188,6 +201,38 @@ public class Manager {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private int getNextScheduledDay(JSONArray daysOfWeek){
+        if (daysOfWeek.length()==1)
+            try {
+                return daysOfWeek.getInt(0);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return 0;
+            }
+        // multiple days selected; find next day
+        int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+        int highest = currentDay;
+        int lowest = 7;
+        for (int i=0; i<daysOfWeek.length(); i++) {
+            try {
+                int current = daysOfWeek.getInt(i);
+
+                if (current>highest)
+                    highest = current;
+
+                if (current<lowest)
+                    lowest = current;
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        // if the highest value found is the current there is no higher value, check for the lowest value
+        int next =  lowest>currentDay ? lowest : (highest<=currentDay ? lowest : highest);
+        System.out.println("NEXT SCHEDULED DAY: "+next);
+        return next;
     }
 
     // auto scheduling functions
@@ -376,9 +421,21 @@ public class Manager {
         return alarmDate;
     }
 
-    public static String getDayOfWeekLabel(Context context, int daynum){
+    public static String getDaysOfWeekLabel(Context context, JSONArray daysOfWeek){
+        if (daysOfWeek.length()==7){
+            return "All Days";
+        }
+
+        String dayText = "";
         String[] daysofweek = context.getResources().getStringArray(R.array.day_units);
-        if (daynum<0 || daynum>daysofweek.length) return "";
-        return daysofweek[daynum];
+
+        for(int i = 0; i<daysOfWeek.length(); i++)
+            try {
+                dayText += daysofweek[daysOfWeek.getInt(i)-1] + ", ";
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        return dayText;
     }
 }

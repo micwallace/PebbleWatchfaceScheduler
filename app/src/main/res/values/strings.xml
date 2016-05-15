@@ -52,7 +52,6 @@
         <item>Days</item>
     </string-array>
     <string-array name="day_units">
-        <item>Every Day</item>
         <item>Sunday</item>
         <item>Monday</item>
         <item>Tuesday</item>

@@ -20,7 +20,6 @@ package au.com.wallaceit.pebblewatchfacescheduler;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;

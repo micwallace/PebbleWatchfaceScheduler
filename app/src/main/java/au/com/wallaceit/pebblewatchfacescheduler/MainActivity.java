@@ -76,16 +76,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import io.apptik.widget.multiselectspinner.BaseMultiSelectSpinner;
+import io.apptik.widget.multiselectspinner.MultiSelectSpinner;
 
 public class MainActivity extends Activity {
     private Manager manager;
@@ -225,10 +230,15 @@ public class MainActivity extends Activity {
                     LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_schedule, parent, false);
                     final Spinner watchselect = (Spinner) layout.findViewById(R.id.watchface_selector);
                     watchselect.setAdapter(new WatchfaceSpinnerAdapter());
-                    final Spinner dayselect = (Spinner) layout.findViewById(R.id.day_selector);
-                    ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(MainActivity.this, R.array.day_units, android.R.layout.simple_spinner_item);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    dayselect.setAdapter(adapter);
+
+                    final MultiSpinner daySelect = (MultiSpinner) layout.findViewById(R.id.day_selector);
+                    daySelect.setItems(Arrays.asList(getResources().getStringArray(R.array.day_units)), "All days", new MultiSpinner.MultiSpinnerListener() {
+                        @Override
+                        public void onItemsSelected(boolean[] selected) {
+                        }
+                    });
+                    daySelect.selectAll(true);
+
                     final TimePicker timeselect = (TimePicker) layout.findViewById(R.id.time_selector);
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -240,14 +250,17 @@ public class MainActivity extends Activity {
                                 }
                             }).setPositiveButton(resources.getString(R.string.ok), new DialogInterface.OnClickListener() {
                         @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
+                        public void onClick(DialogInterface dialogInterface, int index) {
                             Calendar date = Calendar.getInstance();
                             date.set(Calendar.HOUR_OF_DAY, timeselect.getCurrentHour());
                             date.set(Calendar.MINUTE, timeselect.getCurrentMinute());
                             date.set(Calendar.SECOND, 0);
                             JSONObject watchface = (JSONObject) watchselect.getSelectedItem();
+                            // get days of week array
+                            JSONArray daysOfWeek = getCalendarDaysFromSelectedArray(daySelect.getSelected());
+
                             try {
-                                manager.setScheduleItem(String.valueOf(System.currentTimeMillis()), watchface.getString("uuid"), date, dayselect.getSelectedItemPosition());
+                                manager.setScheduleItem(String.valueOf(System.currentTimeMillis()), watchface.getString("uuid"), date, daysOfWeek);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -546,10 +559,14 @@ public class MainActivity extends Activity {
         final Spinner watchselect = (Spinner) layout.findViewById(R.id.watchface_selector);
         WatchfaceSpinnerAdapter spinnerAdapter = new WatchfaceSpinnerAdapter();
         watchselect.setAdapter(spinnerAdapter);
-        final Spinner dayselect = (Spinner) layout.findViewById(R.id.day_selector);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(MainActivity.this, R.array.day_units, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        dayselect.setAdapter(adapter);
+
+        final MultiSpinner daySelect = (MultiSpinner) layout.findViewById(R.id.day_selector);
+        daySelect.setItems(Arrays.asList(getResources().getStringArray(R.array.day_units)), "All days", new MultiSpinner.MultiSpinnerListener() {
+            @Override
+            public void onItemsSelected(boolean[] selected) {
+            }
+        });
+
         final TimePicker timeselect = (TimePicker) layout.findViewById(R.id.time_selector);
         final String key, uuid;
         final Calendar date;
@@ -562,7 +579,27 @@ public class MainActivity extends Activity {
             key = scheduleObj.getString("key");
             uuid = scheduleObj.getString("uuid");
             watchselect.setSelection(spinnerAdapter.getUuidIndex(uuid));
-            dayselect.setSelection(scheduleObj.has("day")?scheduleObj.getInt("day"):0);
+
+            // put selected days into an array
+            if (!scheduleObj.has("days")){
+                int day = scheduleObj.getInt("day");
+                if (day==0){
+                    daySelect.selectAll(true);
+                } else {
+                    boolean[] selected = daySelect.getSelected();
+                    selected[day-1] = true;
+                    daySelect.setSelected(selected);
+                }
+            } else {
+                JSONArray daysOfWeek = scheduleObj.getJSONArray("days");
+                boolean[] selected = new boolean[7];
+                // convert days JSON array into boolean array for adapter
+                for (int i=0; i<daysOfWeek.length(); i++){
+                    int day = daysOfWeek.getInt(i);
+                    selected[day-1] = true;
+                }
+                daySelect.setSelected(selected);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
             return;
@@ -571,30 +608,42 @@ public class MainActivity extends Activity {
         timeselect.setCurrentMinute(date.get(Calendar.MINUTE));
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle(resources.getString(R.string.edit_schedule)).setView(layout)
-                .setNegativeButton(resources.getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                }).setPositiveButton(resources.getString(R.string.ok), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                date.set(Calendar.HOUR_OF_DAY, timeselect.getCurrentHour());
-                date.set(Calendar.MINUTE, timeselect.getCurrentMinute());
-
-                JSONObject watchObj = (JSONObject) watchselect.getSelectedItem();
-                String newuuid;
-                try {
-                    newuuid = watchObj.getString("uuid");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    newuuid = uuid;
+            .setNegativeButton(resources.getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
                 }
-                manager.setScheduleItem(key, newuuid, date, dayselect.getSelectedItemPosition());
-                dialogInterface.dismiss();
-                scheduleAdapter.refreshSchedule();
-            }
+            }).setPositiveButton(resources.getString(R.string.ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int index) {
+                    date.set(Calendar.HOUR_OF_DAY, timeselect.getCurrentHour());
+                    date.set(Calendar.MINUTE, timeselect.getCurrentMinute());
+
+                    JSONObject watchObj = (JSONObject) watchselect.getSelectedItem();
+                    String newuuid;
+                    try {
+                        newuuid = watchObj.getString("uuid");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        newuuid = uuid;
+                    }
+
+                    JSONArray daysOfWeek = getCalendarDaysFromSelectedArray(daySelect.getSelected());
+
+                    manager.setScheduleItem(key, newuuid, date, daysOfWeek);
+                    dialogInterface.dismiss();
+                    scheduleAdapter.refreshSchedule();
+                }
         }).show();
+    }
+
+    private JSONArray getCalendarDaysFromSelectedArray(boolean[] selected){
+        JSONArray daysOfWeek = new JSONArray();
+        for (int i=0; i<selected.length; i++){
+            if (selected[i])
+                daysOfWeek.put(i+1);
+        }
+        return daysOfWeek;
     }
 
     private boolean checkPebbleLogFile(Uri file){
@@ -1064,15 +1113,22 @@ public class MainActivity extends Activity {
                 final String key, uuid, displayTime, displayName;
                 String displayTimeTemp, displayNameTemp, keyTemp;
                 final Long time;
-                final int day;
                 try {
                     keyTemp = scheduleObj.getString("key");
                     uuid = scheduleObj.getString("uuid");
                     time = scheduleObj.getLong("time");
-                    day = scheduleObj.getInt("day");
+                    JSONArray daysOfWeek;
+                    if (!scheduleObj.has("days")){
+                        int day = scheduleObj.getInt("day");
+                        daysOfWeek = new JSONArray();
+                        daysOfWeek.put(day);
+                    } else {
+                        daysOfWeek = scheduleObj.getJSONArray("days");
+                    }
+
                     Date date = new Date(time);
                     SimpleDateFormat sdf = new SimpleDateFormat("hh:mma", Locale.ENGLISH);
-                    displayTimeTemp = sdf.format(date)+" "+Manager.getDayOfWeekLabel(MainActivity.this, day);
+                    displayTimeTemp = sdf.format(date)+" "+Manager.getDaysOfWeekLabel(MainActivity.this, daysOfWeek);
                     if (uuid.equals("0")) {
                         displayNameTemp = resources.getString(R.string.random);
                     } else {
