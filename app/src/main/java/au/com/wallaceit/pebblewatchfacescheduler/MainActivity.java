@@ -674,16 +674,17 @@ public class MainActivity extends Activity {
             case Intent.ACTION_SEND_MULTIPLE:
                 ArrayList<Uri> imageUris = getIntent().getParcelableArrayListExtra(Intent.EXTRA_STREAM);
                 boolean valid = false;
-                for (int i = 0; i < imageUris.size(); i++) {
-                    if (imageUris.get(i).toString().contains("pebble.log.gz")) {
-                        valid = true;
-                        file = imageUris.get(i);
-                        break;
+                if (imageUris!=null)
+                    for (int i = 0; i < imageUris.size(); i++) {
+                        if (imageUris.get(i).toString().contains("pebble.log.gz")) {
+                            valid = true;
+                            file = imageUris.get(i);
+                            break;
+                        }
                     }
-                }
                 // did we get a valid file?
                 if (!valid) {
-                    Toast.makeText(MainActivity.this, resources.getString(R.string.wrong_import_file_error), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, resources.getString(R.string.import_email_error), Toast.LENGTH_LONG).show();
                     return;
                 }
                 break;

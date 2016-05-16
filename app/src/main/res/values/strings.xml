@@ -35,6 +35,7 @@
     <string name="no_watchfaces_selected_error">You don\'t have any watchfaces enabled for randomisation, check their checkbox in the list to enable</string>
     <string name="select_watchfaces_first">Select some watchfaces first</string>
     <string name="edit_schedule">Edit schedule</string>
+    <string name="import_email_error">Could not find pebble.log.gz in the support email, try opening the attached file directly.</string>
     <string name="wrong_import_file_error">Wrong file, please open pebble.log.gz to import app info</string>
     <string name="import_complete">Import Complete</string>
     <string name="view_import_message">Would you like to see a list of all watchfaces &amp; apps?</string>

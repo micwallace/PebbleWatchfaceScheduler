@@ -55,4 +55,5 @@
     <string name="all_days">Todos los días</string>
     <string name="weekdays">Días de la semana</string>
     <string name="weekends">Fines de semana</string>
+    <string name="import_email_error">No se pudo encontrar pebble.log.gz en el correo electrónico de soporte , intente abrir el archivo adjunto directamente.</string>
 </resources>
