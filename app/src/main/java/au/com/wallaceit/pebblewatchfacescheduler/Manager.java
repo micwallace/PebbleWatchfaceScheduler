@@ -51,7 +51,7 @@ public class Manager {
         try {
             uuids = new JSONObject(preferences.getString("uuids", "{}"));
             schedule = new JSONObject(preferences.getString("schedule", "{}"));
-            autoSchedule = new JSONObject(preferences.getString("autoSchedule", "{\"enabled\":false,\"random\":false,\"interval\":86400000,\"uuids\":[],\"curindex\":0}"));
+            autoSchedule = new JSONObject(preferences.getString("autoSchedule", "{\"enabled\":false,\"random\":false,\"interval\":86400000,\"time\":0,\"uuids\":[],\"curindex\":0}"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -133,11 +133,11 @@ public class Manager {
         return scheduleList;
     }
 
-    public void setScheduleItem(String key, String uuid, Calendar time, JSONArray daysOfWeek){
+    public Long setScheduleItem(String key, String uuid, Calendar time, JSONArray daysOfWeek){
         // if day of week selected, adjust to that day
         long millis;
 
-        int nextDayOfWeek = getNextScheduledDay(daysOfWeek);
+        int nextDayOfWeek = getNextScheduledDay(daysOfWeek, time);
 
         if (nextDayOfWeek==0) {
             millis = time.getTimeInMillis();
@@ -158,9 +158,11 @@ public class Manager {
             schedule.put(key, scheduleObj);
             saveSchedule();
             scheduleAlarmIntent(key, uuid, millis);
+            return millis; // return next time for toast message
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        return 0L;
     }
 
     public void removeScheduleItem(String key){
@@ -176,17 +178,18 @@ public class Manager {
             String uuid = scheduleObj.getString("uuid");
             Long time = scheduleObj.getLong("time");
 
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(time);
+
             int nextDayOfWeek;
             if (!scheduleObj.has("days")){
                 // handle legacy value
                 nextDayOfWeek = scheduleObj.has("day")?scheduleObj.getInt("day"):0;
             } else {
                 JSONArray daysOfWeek = scheduleObj.getJSONArray("days");
-                nextDayOfWeek = getNextScheduledDay(daysOfWeek);
+                nextDayOfWeek = getNextScheduledDay(daysOfWeek, calendar);
             }
 
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(time);
             if (nextDayOfWeek==0) {
                 calendar.add(Calendar.DAY_OF_YEAR, 1);
                 time = calendar.getTimeInMillis(); // add a day
@@ -203,7 +206,8 @@ public class Manager {
         }
     }
 
-    private int getNextScheduledDay(JSONArray daysOfWeek){
+    private int getNextScheduledDay(JSONArray daysOfWeek, Calendar time){
+        // single day selected
         if (daysOfWeek.length()==1)
             try {
                 return daysOfWeek.getInt(0);
@@ -211,27 +215,24 @@ public class Manager {
                 e.printStackTrace();
                 return 0;
             }
-        // multiple days selected; find next day
+        // check if current day is enabled and return it if time hasn't passed
+        String daysStr = daysOfWeek.toString();
         int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        int highest = currentDay;
-        int lowest = 7;
-        for (int i=0; i<daysOfWeek.length(); i++) {
-            try {
-                int current = daysOfWeek.getInt(i);
-
-                if (current>highest)
-                    highest = current;
-
-                if (current<lowest)
-                    lowest = current;
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        if (daysStr.contains(String.valueOf(currentDay)) && time.getTimeInMillis() > System.currentTimeMillis()){
+            return currentDay;
         }
-        // if the highest value found is the current there is no higher value, check for the lowest value
-        int next =  lowest>currentDay ? lowest : (highest<=currentDay ? lowest : highest);
+        // multiple days selected; find next day
+        int current = currentDay==1 ? 7 : currentDay-1;
+        int next = current;
+        for (int i=1; i<7; i++) {
+            // check for value in selected days
+            if (daysStr.contains(String.valueOf(current)))
+                next = current;
+            // move to the next day
+            current = current==1 ? 7 : current-1;
+        }
         System.out.println("NEXT SCHEDULED DAY: "+next);
+        System.out.println("DAYS ARRAY: "+daysStr);
         return next;
     }
 
@@ -240,29 +241,33 @@ public class Manager {
         return autoSchedule;
     }
 
-    public void setAutoScheduleEnabled(boolean enabled){
+    public Long setAutoScheduleEnabled(boolean enabled){
         try {
             autoSchedule.put("enabled", enabled);
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        Long nextTime = 0L;
         if (enabled){
-            scheduleAutoAlarmIntent();
+            nextTime = scheduleAutoAlarmIntent();
         } else {
             cancelAlarmIntent("0");
         }
         saveAutoSchedule();
+        return nextTime;
     }
 
-    public void setAutoScheduleInterval(Long interval){
+    public Long setAutoScheduleInterval(Long interval){
+        Long nextTime = 0L;
         try {
             autoSchedule.put("interval", interval);
             if (autoSchedule.getBoolean("enabled"))
-                scheduleAutoAlarmIntent();
+                nextTime = scheduleAutoAlarmIntent();
         } catch (JSONException e) {
             e.printStackTrace();
         }
         saveAutoSchedule();
+        return nextTime;
     }
 
     public void setAutoScheduleUuids(JSONArray array){
@@ -339,13 +344,17 @@ public class Manager {
         return uuid;
     }
 
-    public void scheduleAutoAlarmIntent(){
+    public Long scheduleAutoAlarmIntent(){
         Long time = System.currentTimeMillis();
         try {
             time += autoSchedule.getLong("interval");
+            autoSchedule.put("time", time);
+            saveAutoSchedule();
             scheduleAlarmIntent("0", "0", time);
+            return time;
         } catch (JSONException e) {
             e.printStackTrace();
+            return 0L;
         }
     }
 
@@ -411,6 +420,35 @@ public class Manager {
         return "no record";
     }
 
+    public String getNextChangeInfo(){
+        Long nexttime = null;
+        String nextkey = "0";
+        try {
+            nexttime = autoSchedule.getLong("time");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Iterator<String> keys = schedule.keys();
+        while (keys.hasNext()){
+            String curkey = keys.next();
+            try {
+                Long curtime = schedule.getJSONObject(curkey).getLong("time");
+                if (nexttime==null || curtime < nexttime){
+                    nextkey = curkey;
+                    nexttime = curtime;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        if (nexttime==null)
+            return "no record";
+
+        String timeStr = new Date(nexttime).toString();
+
+        return (nextkey.equals("0") ? "auto" : "scheduled") +" change at "+timeStr+" ("+nextkey+")";
+    }
+
     public static Calendar nextDayOfWeek(int dow, Calendar alarmDate) {
         Calendar date = Calendar.getInstance();
         int diff = dow - alarmDate.get(Calendar.DAY_OF_WEEK);
@@ -423,7 +461,14 @@ public class Manager {
 
     public static String getDaysOfWeekLabel(Context context, JSONArray daysOfWeek){
         if (daysOfWeek.length()==7){
-            return "All Days";
+            return context.getString(R.string.all_days);
+        }
+        // check for weekdays and weekends
+        String daysString = daysOfWeek.toString();
+        if (daysString.contains("1") && daysString.contains("7")){
+            return context.getString(R.string.weekends);
+        } else if (daysOfWeek.length()==5 && (daysString.contains("2") && daysString.contains("3") && daysString.contains("4") && daysString.contains("5") && daysString.contains("6"))){
+            return context.getString(R.string.weekdays);
         }
 
         String dayText = "";
@@ -436,6 +481,6 @@ public class Manager {
                 e.printStackTrace();
             }
 
-        return dayText;
+        return dayText.substring(0, dayText.length()-2);
     }
 }

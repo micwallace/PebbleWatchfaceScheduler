@@ -82,15 +82,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import io.apptik.widget.multiselectspinner.BaseMultiSelectSpinner;
-import io.apptik.widget.multiselectspinner.MultiSelectSpinner;
 
 public class MainActivity extends Activity {
     private Manager manager;
@@ -231,12 +227,8 @@ public class MainActivity extends Activity {
                     final Spinner watchselect = (Spinner) layout.findViewById(R.id.watchface_selector);
                     watchselect.setAdapter(new WatchfaceSpinnerAdapter());
 
-                    final MultiSpinner daySelect = (MultiSpinner) layout.findViewById(R.id.day_selector);
-                    daySelect.setItems(Arrays.asList(getResources().getStringArray(R.array.day_units)), "All days", new MultiSpinner.MultiSpinnerListener() {
-                        @Override
-                        public void onItemsSelected(boolean[] selected) {
-                        }
-                    });
+                    final MultiSelectSpinner daySelect = (MultiSelectSpinner) layout.findViewById(R.id.day_selector);
+                    daySelect.setItems(Arrays.asList(getResources().getStringArray(R.array.day_units)), "All days");
                     daySelect.selectAll(true);
 
                     final TimePicker timeselect = (TimePicker) layout.findViewById(R.id.time_selector);
@@ -260,7 +252,8 @@ public class MainActivity extends Activity {
                             JSONArray daysOfWeek = getCalendarDaysFromSelectedArray(daySelect.getSelected());
 
                             try {
-                                manager.setScheduleItem(String.valueOf(System.currentTimeMillis()), watchface.getString("uuid"), date, daysOfWeek);
+                                Long millis = manager.setScheduleItem(String.valueOf(System.currentTimeMillis()), watchface.getString("uuid"), date, daysOfWeek);
+                                showAlarmSetToast(millis);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -302,7 +295,8 @@ public class MainActivity extends Activity {
                         return;
                     }
                 }
-                manager.setAutoScheduleEnabled(isChecked);
+                Long next = manager.setAutoScheduleEnabled(isChecked);
+                showAlarmSetToast(next);
             }
         });
 
@@ -380,11 +374,19 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if ((keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) || (keyCode == KeyEvent.KEYCODE_VOLUME_UP)) {
+        if ((keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)) {
             Toast.makeText(MainActivity.this, "Last Change: "+manager.getLastChangeInfo(), Toast.LENGTH_LONG).show();
+            return true;
+        } else if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP)){
+            Toast.makeText(MainActivity.this, "Next Change: "+manager.getNextChangeInfo(), Toast.LENGTH_LONG).show();
             return true;
         } else
             return super.onKeyDown(keyCode, event);
+    }
+
+    private void showAlarmSetToast(Long millis){
+        if (millis>0)
+            Toast.makeText(MainActivity.this, "Next change set for: "+(new Date(millis).toString()), Toast.LENGTH_LONG).show();
     }
 
     private void saveAutoInterval(){
@@ -413,7 +415,8 @@ public class MainActivity extends Activity {
                 break;
         }
         long interval = number*unitmillis;
-        manager.setAutoScheduleInterval(interval);
+        Long next = manager.setAutoScheduleInterval(interval);
+        showAlarmSetToast(next);
     }
 
     class WatchfaceSpinnerAdapter implements SpinnerAdapter {
@@ -560,12 +563,8 @@ public class MainActivity extends Activity {
         WatchfaceSpinnerAdapter spinnerAdapter = new WatchfaceSpinnerAdapter();
         watchselect.setAdapter(spinnerAdapter);
 
-        final MultiSpinner daySelect = (MultiSpinner) layout.findViewById(R.id.day_selector);
-        daySelect.setItems(Arrays.asList(getResources().getStringArray(R.array.day_units)), "All days", new MultiSpinner.MultiSpinnerListener() {
-            @Override
-            public void onItemsSelected(boolean[] selected) {
-            }
-        });
+        final MultiSelectSpinner daySelect = (MultiSelectSpinner) layout.findViewById(R.id.day_selector);
+        daySelect.setItems(Arrays.asList(getResources().getStringArray(R.array.day_units)), getString(R.string.all_days));
 
         final TimePicker timeselect = (TimePicker) layout.findViewById(R.id.time_selector);
         final String key, uuid;
@@ -630,7 +629,9 @@ public class MainActivity extends Activity {
 
                     JSONArray daysOfWeek = getCalendarDaysFromSelectedArray(daySelect.getSelected());
 
-                    manager.setScheduleItem(key, newuuid, date, daysOfWeek);
+                    Long millis = manager.setScheduleItem(key, newuuid, date, daysOfWeek);
+                    showAlarmSetToast(millis);
+
                     dialogInterface.dismiss();
                     scheduleAdapter.refreshSchedule();
                 }

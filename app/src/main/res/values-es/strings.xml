@@ -52,4 +52,7 @@
         <item>Viernes</item>
         <item><![CDATA[Sábado]]></item>
     </string-array>
+    <string name="all_days">Todos los días</string>
+    <string name="weekdays">Días de la semana</string>
+    <string name="weekends">Fines de semana</string>
 </resources>

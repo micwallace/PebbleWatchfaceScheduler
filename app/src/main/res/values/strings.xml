@@ -46,6 +46,9 @@
     <string name="edit_watchface">Edit Watchface</string>
     <string name="delete_schedule">Delete This Schedule?</string>
     <string name="import_read_file_failed">Failed to read import file</string>
+    <string name="all_days">All Days</string>
+    <string name="weekends">Weekends</string>
+    <string name="weekdays" >Weekdays</string>
     <string-array name="time_units">
         <item>Minutes</item>
         <item>Hours</item>

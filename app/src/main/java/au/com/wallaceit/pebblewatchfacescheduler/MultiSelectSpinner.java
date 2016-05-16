@@ -1,4 +1,3 @@
-package au.com.wallaceit.pebblewatchfacescheduler;
 /*
  * Copyright 2013 Michael Boyde Wallace (http://wallaceit.com.au)
  * This file is part of Reddinator.
@@ -16,9 +15,10 @@ package au.com.wallaceit.pebblewatchfacescheduler;
  * You should have received a copy of the GNU General Public License
  * along with Reddinator (COPYING). If not, see <http://www.gnu.org/licenses/>.
  *
- * This class for multiple selection spinner was originally sourced from here and mofified for this project:
+ * This class for multiple selection spinner was originally sourced from here and modified for this project:
  * http://stackoverflow.com/questions/5015686/android-spinner-with-multiple-choice
  */
+package au.com.wallaceit.pebblewatchfacescheduler;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -30,23 +30,22 @@ import android.widget.Spinner;
 import java.util.Arrays;
 import java.util.List;
 
-public class MultiSpinner extends Spinner implements
+public class MultiSelectSpinner extends Spinner implements
         DialogInterface.OnMultiChoiceClickListener, DialogInterface.OnCancelListener {
 
     private List<String> items;
     private boolean[] selected;
     private String defaultText;
-    private MultiSpinnerListener listener;
 
-    public MultiSpinner(Context context) {
+    public MultiSelectSpinner(Context context) {
         super(context);
     }
 
-    public MultiSpinner(Context arg0, AttributeSet arg1) {
+    public MultiSelectSpinner(Context arg0, AttributeSet arg1) {
         super(arg0, arg1);
     }
 
-    public MultiSpinner(Context arg0, AttributeSet arg1, int arg2) {
+    public MultiSelectSpinner(Context arg0, AttributeSet arg1, int arg2) {
         super(arg0, arg1, arg2);
     }
 
@@ -58,7 +57,6 @@ public class MultiSpinner extends Spinner implements
     @Override
     public void onCancel(DialogInterface dialog) {
         updateLabel();
-        listener.onItemsSelected(selected);
     }
 
     private void updateLabel(){
@@ -106,11 +104,9 @@ public class MultiSpinner extends Spinner implements
         return true;
     }
 
-    public void setItems(List<String> items, String allText,
-                         MultiSpinnerListener listener) {
+    public void setItems(List<String> items, String allText) {
         this.items = items;
         this.defaultText = allText;
-        this.listener = listener;
 
         // all selected by default
         selected = new boolean[items.size()];
@@ -138,7 +134,4 @@ public class MultiSpinner extends Spinner implements
         return selected;
     }
 
-    public interface MultiSpinnerListener {
-        public void onItemsSelected(boolean[] selected);
-    }
 }
