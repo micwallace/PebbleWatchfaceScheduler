@@ -1066,12 +1066,6 @@ public class MainActivity extends Activity {
                 @Override
                 public int compare(JSONObject s, JSONObject t1) {
                     try {
-                        if (s.getInt("day")==0)
-                            if (t1.getInt("day")==0){
-                                return (int) ((s.getLong("time") % (24*60*60*1000L)) - (t1.getLong("time") % (24*60*60*1000L)));
-                            } else {
-                                return Integer.MIN_VALUE;
-                            }
                         Calendar date1 = Calendar.getInstance();
                         date1.setTimeInMillis(s.getLong("time"));
                         Calendar date2 = Calendar.getInstance();

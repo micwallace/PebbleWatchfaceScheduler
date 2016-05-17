@@ -460,8 +460,12 @@ public class Manager {
     }
 
     public static String getDaysOfWeekLabel(Context context, JSONArray daysOfWeek){
-        if (daysOfWeek.length()==7){
-            return context.getString(R.string.all_days);
+        try {
+            if (daysOfWeek.length()==7 || (daysOfWeek.length()==1 && daysOfWeek.getInt(0)==0)){
+                return context.getString(R.string.all_days);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         // check for weekdays and weekends
         String daysString = daysOfWeek.toString();
