@@ -20,6 +20,9 @@ package au.com.wallaceit.pebblewatchfacescheduler;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.TimePickerDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,7 +36,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.view.ViewPager;
-import android.text.ClipboardManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -98,7 +100,7 @@ public class MainActivity extends Activity {
     Spinner autoSpinner;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ActionBar actionBar = getActionBar();
@@ -113,8 +115,8 @@ public class MainActivity extends Activity {
         // setup views
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
         SimpleTabsAdapter pageAdapter = new SimpleTabsAdapter(
-                new String[]{resources.getString(R.string.watchfaces), resources.getString(R.string.schedule)},
-                new int[]{R.id.watchface_view, R.id.schedule_listview},
+                new String[]{resources.getString(R.string.watchfaces), resources.getString(R.string.schedule), getString(R.string.Settings)},
+                new int[]{R.id.watchface_view, R.id.schedule_listview, R.id.settings_view},
                 MainActivity.this,
                 null
         );
@@ -198,7 +200,7 @@ public class MainActivity extends Activity {
                 }
                 // Copy the Text to the clipboard
                 ClipboardManager manager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                manager.setText(uuid);
+                manager.setPrimaryClip(ClipData.newPlainText(uuid, uuid));
                 // Show a message:
                 Toast.makeText(MainActivity.this, resources.getString(R.string.uuid_copied), Toast.LENGTH_SHORT).show();
                 return true;
@@ -300,7 +302,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        final CheckBox randomCb = (CheckBox) findViewById(R.id.auto_random);
+        CheckBox randomCb = (CheckBox) findViewById(R.id.auto_random);
         randomCb.setChecked(manager.isAutoScheduleRandom());
         randomCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -323,7 +325,12 @@ public class MainActivity extends Activity {
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        saveAutoInterval();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                saveAutoInterval();
+                            }
+                        });
                     }
                 }, 1000);
             }
@@ -363,6 +370,56 @@ public class MainActivity extends Activity {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        // setup quiet time UI
+        CheckBox quietCb = (CheckBox) findViewById(R.id.quiet_time_enabled);
+        quietCb.setChecked(manager.getQuietTimeEnabled());
+        quietCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                manager.setQuietTimeEnabled(isChecked);
+            }
+        });
+
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm aa");
+
+        final TextView quietStart = (TextView) findViewById(R.id.quiet_time_from);
+        quietStart.setText(dateFormat.format(new Date(manager.getQuietTimeStart())));
+        quietStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final Calendar start = Calendar.getInstance();
+                start.setTimeInMillis(manager.getQuietTimeStart());
+                new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int hour, int minute) {
+                        start.set(Calendar.HOUR_OF_DAY, hour);
+                        start.set(Calendar.MINUTE, minute);
+                        manager.setQuietTimeStart(start.getTimeInMillis());
+                        quietStart.setText(dateFormat.format(start.getTime()));
+                    }
+                }, start.get(Calendar.HOUR_OF_DAY), start.get(Calendar.MINUTE), false).show();
+            }
+        });
+
+        final TextView quietEnd = (TextView) findViewById(R.id.quiet_time_to);
+        quietEnd.setText(dateFormat.format(new Date(manager.getQuietTimeEnd())));
+        quietEnd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final Calendar end = Calendar.getInstance();
+                end.setTimeInMillis(manager.getQuietTimeEnd());
+                new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int hour, int minute) {
+                        end.set(Calendar.HOUR_OF_DAY, hour);
+                        end.set(Calendar.MINUTE, minute);
+                        manager.setQuietTimeEnd(end.getTimeInMillis());
+                        quietEnd.setText(dateFormat.format(end.getTime()));
+                    }
+                }, end.get(Calendar.HOUR_OF_DAY), end.get(Calendar.MINUTE), false).show();
             }
         });
 
@@ -440,8 +497,9 @@ public class MainActivity extends Activity {
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
-            if (position==0){
-                viewHolder.name.setText(resources.getString(R.string.random));
+            if (position<3){
+                String name = getSpecialUuidLabel(getSpecialUuid(position));
+                viewHolder.name.setText(name);
                 return convertView;
             }
             JSONObject item = (JSONObject) getItem(position);
@@ -456,8 +514,15 @@ public class MainActivity extends Activity {
         }
 
         public int getUuidIndex(String uuid){
-            if (uuid.equals("0"))
-                return 0;
+
+            switch(uuid){
+                case "0":
+                    return 2;
+                case "-1":
+                    return 0;
+                case "-2":
+                    return 1;
+            }
 
             for (int i = 0; i<list.size(); i++){
                 try {
@@ -482,22 +547,36 @@ public class MainActivity extends Activity {
 
         @Override
         public int getCount() {
-            return list.size()+1;
+            return list.size()+3;
         }
 
         @Override
         public Object getItem(int position) {
-            if (position==0){
+            if (position<3){
+                String uuid = getSpecialUuid(position);
+                String name = getSpecialUuidLabel(uuid);
                 JSONObject json = new JSONObject();
                 try {
-                    json.put("name", resources.getString(R.string.random));
-                    json.put("uuid", "0");
+                    json.put("name", name);
+                    json.put("uuid", uuid);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 return json;
             }
-            return list.get(position-1);
+            return list.get(position-3);
+        }
+
+        private String getSpecialUuid(int position){
+            switch (position){
+                case 0:
+                    return "-1";
+                case 1:
+                    return "-2";
+                case 2:
+                default:
+                    return "0";
+            }
         }
 
         @Override
@@ -522,8 +601,9 @@ public class MainActivity extends Activity {
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
-            if (position==0){
-                viewHolder.name.setText(resources.getString(R.string.random));
+            if (position<3){
+                String name = getSpecialUuidLabel(getSpecialUuid(position));
+                viewHolder.name.setText(name);
                 return convertView;
             }
             JSONObject item = (JSONObject) getItem(position);
@@ -554,6 +634,18 @@ public class MainActivity extends Activity {
 
         class ViewHolder {
             TextView name;
+        }
+    }
+
+    private String getSpecialUuidLabel(String uuid){
+        switch (uuid){
+            case "-1":
+                return getString(R.string.turn_on_auto_rotate);
+            case "-2":
+                return getString(R.string.turn_off_auto_rotate);
+            case "0":
+            default:
+                return getString(R.string.random);
         }
     }
 
@@ -770,7 +862,7 @@ public class MainActivity extends Activity {
                         // Copy the Text to the clipboard
                         ClipboardManager manager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                         TextView showTextParam = (TextView) v;
-                        manager.setText(showTextParam.getText());
+                        manager.setPrimaryClip(ClipData.newPlainText(showTextParam.getText(), showTextParam.getText()));
                         // Show a message:
                         Toast.makeText(v.getContext(), resources.getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show();
                         return true;
@@ -1125,8 +1217,8 @@ public class MainActivity extends Activity {
                     Date date = new Date(time);
                     SimpleDateFormat sdf = new SimpleDateFormat("hh:mma", Locale.ENGLISH);
                     displayTimeTemp = sdf.format(date)+" "+Manager.getDaysOfWeekLabel(MainActivity.this, daysOfWeek);
-                    if (uuid.equals("0")) {
-                        displayNameTemp = resources.getString(R.string.random);
+                    if (uuid.equals("0") || uuid.equals("-1") || uuid.equals("-2")) {
+                        displayNameTemp = getSpecialUuidLabel(uuid);
                     } else {
                         displayNameTemp = manager.getUuids().getJSONObject(uuid).getString("name");
                     }

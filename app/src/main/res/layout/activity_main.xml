@@ -22,86 +22,6 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:orientation="vertical">
-            <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_margin="8dip">
-                <TextView
-                    android:id="@+id/auto_title"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:text="@string/auto_rotate"/>
-                <RelativeLayout
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-                    <!-- Dummy item to prevent AutoCompleteTextView from receiving focus -->
-                    <LinearLayout
-                        android:focusable="true" android:focusableInTouchMode="true"
-                        android:layout_width="0px" android:layout_height="0px"
-                        tools:ignore="UselessLeaf" />
-                    <CheckBox
-                        android:id="@+id/auto_enabled"
-                        android:layout_width="wrap_content"
-                        android:layout_height="18dp"
-                        android:layout_margin="4dp"
-                        android:layout_marginEnd="0dp"
-                        android:layout_marginRight="0dp"
-                        android:layout_alignParentTop="true"
-                        android:layout_alignParentLeft="true"
-                        android:layout_alignParentStart="true" />
-                    <TextView
-                        android:id="@+id/auto_enabled_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="18dp"
-                        android:layout_margin="4dp"
-                        android:layout_marginStart="0dp"
-                        android:layout_marginLeft="0dp"
-                        android:paddingBottom="2dp"
-                        android:layout_alignParentTop="true"
-                        android:layout_toRightOf="@id/auto_enabled"
-                        android:layout_toEndOf="@id/auto_enabled"
-                        android:text="@string/enabled"/>
-                    <CheckBox
-                        android:id="@+id/auto_random"
-                        android:layout_width="wrap_content"
-                        android:layout_height="18dp"
-                        android:layout_margin="4dp"
-                        android:layout_marginEnd="0dp"
-                        android:layout_marginRight="0dp"
-                        android:layout_alignParentLeft="true"
-                        android:layout_alignParentStart="true"
-                        android:layout_below="@id/auto_enabled"/>
-                    <TextView
-                        android:id="@+id/auto_random_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="18dp"
-                        android:layout_margin="4dp"
-                        android:layout_marginStart="0dp"
-                        android:layout_marginLeft="0dp"
-                        android:layout_toRightOf="@id/auto_random"
-                        android:layout_toEndOf="@id/auto_random"
-                        android:layout_below="@id/auto_enabled_label"
-                        android:text="@string/random"/>
-                    <NumberPicker
-                        android:id="@+id/auto_increment"
-                        android:layout_width="wrap_content"
-                        android:layout_height="60dip"
-                        android:layout_marginLeft="8dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_toRightOf="@id/auto_enabled_label"
-                        android:layout_toEndOf="@id/auto_enabled_label"/>
-                    <Spinner
-                        android:id="@+id/auto_unit"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_toRightOf="@id/auto_increment"
-                        android:layout_toEndOf="@id/auto_increment"/>
-                </RelativeLayout>
-            </LinearLayout>
             <com.mobeta.android.dslv.DragSortListView
                 xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:dslv="http://schemas.android.com/apk/res-auto"
@@ -136,6 +56,157 @@
             android:id="@+id/schedule_listview"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent" />
+
+        <LinearLayout
+            android:id="@+id/settings_view"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:padding="10dp">
+            <TextView
+                android:id="@+id/auto_title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:text="@string/auto_rotate"
+                android:layout_marginBottom="4dp"/>
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp"
+                android:layout_margin="4dp">
+                <!-- Dummy item to prevent AutoCompleteTextView from receiving focus -->
+                <LinearLayout
+                    android:focusable="true" android:focusableInTouchMode="true"
+                    android:layout_width="0px" android:layout_height="0px"
+                    tools:ignore="UselessLeaf" />
+                <CheckBox
+                    android:id="@+id/auto_enabled"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginRight="0dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true" />
+                <TextView
+                    android:id="@+id/auto_enabled_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginLeft="0dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@id/auto_enabled"
+                    android:layout_toEndOf="@id/auto_enabled"
+                    android:text="@string/enabled"/>
+                <CheckBox
+                    android:id="@+id/auto_random"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginRight="0dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@id/auto_enabled"/>
+                <TextView
+                    android:id="@+id/auto_random_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginLeft="0dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_toRightOf="@id/auto_random"
+                    android:layout_toEndOf="@id/auto_random"
+                    android:layout_below="@id/auto_enabled_label"
+                    android:text="@string/random"/>
+                <NumberPicker
+                    android:id="@+id/auto_increment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="60dip"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_toRightOf="@id/auto_enabled_label"
+                    android:layout_toEndOf="@id/auto_enabled_label"/>
+                <Spinner
+                    android:id="@+id/auto_unit"
+                    android:layout_width="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/auto_increment"
+                    android:layout_toEndOf="@id/auto_increment"/>
+            </RelativeLayout>
+            <TextView
+                android:id="@+id/quiet_time_title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:text="@string/quiet_time"
+                android:layout_marginBottom="4dp"/>
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_margin="4dp">
+                <CheckBox
+                    android:id="@+id/quiet_time_enabled"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginRight="0dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true" />
+                <TextView
+                    android:id="@+id/quiet_time_enabled_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginLeft="0dp"
+                    android:paddingBottom="2dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@id/quiet_time_enabled"
+                    android:layout_toEndOf="@id/quiet_time_enabled"
+                    android:text="@string/enabled"/>
+                <LinearLayout
+                    android:id="@+id/quiet_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/quiet_time_enabled"
+                    android:layout_centerVertical="true"
+                    android:layout_marginTop="4dp">
+                    <EditText
+                        android:id="@+id/quiet_time_from"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:text="12:00am"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="to"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+                    <EditText
+                        android:id="@+id/quiet_time_to"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:text="06:00am"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_below="@id/quiet_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/quiet_time_notice"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"/>
+            </RelativeLayout>
+
+        </LinearLayout>
 
     </android.support.v4.view.ViewPager>
 </RelativeLayout>

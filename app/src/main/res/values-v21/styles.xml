@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme.
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
+
+        <item name="android:listViewStyle">@style/ListViewStyle</item>
+    </style>
+
+    <style name="ListViewStyle">
+        <item name="android:background">#000</item>
+    </style>-->
+
+</resources>

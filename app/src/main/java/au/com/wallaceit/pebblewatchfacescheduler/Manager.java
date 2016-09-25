@@ -231,8 +231,7 @@ public class Manager {
             // move to the next day
             current = current==1 ? 7 : current-1;
         }
-        System.out.println("NEXT SCHEDULED DAY: "+next);
-        System.out.println("DAYS ARRAY: "+daysStr);
+        //System.out.println("NEXT SCHEDULED DAY: "+next);
         return next;
     }
 
@@ -356,6 +355,64 @@ public class Manager {
             e.printStackTrace();
             return 0L;
         }
+    }
+
+    // Quiet time functions
+    public boolean isQuietTimeActive(){
+        if (!getQuietTimeEnabled())
+            return false;
+
+        Calendar now = Calendar.getInstance();
+        Calendar stime = Calendar.getInstance();
+        stime.setTimeInMillis(getQuietTimeStart());
+        Calendar etime = Calendar.getInstance();
+        etime.setTimeInMillis(getQuietTimeEnd());
+
+        stime.set(Calendar.YEAR, now.get(Calendar.YEAR));
+        stime.set(Calendar.MONTH, now.get(Calendar.MONTH));
+        stime.set(Calendar.DATE, now.get(Calendar.DATE));
+        etime.set(Calendar.YEAR, now.get(Calendar.YEAR));
+        etime.set(Calendar.MONTH, now.get(Calendar.MONTH));
+        etime.set(Calendar.DATE, now.get(Calendar.DATE));
+        // if end time is less than start time then we need to increment date for a correct comparison,
+        boolean incrementDay = (etime.get(Calendar.HOUR_OF_DAY)<stime.get(Calendar.HOUR_OF_DAY) ||
+                (etime.get(Calendar.HOUR_OF_DAY)==stime.get(Calendar.HOUR_OF_DAY) && etime.get(Calendar.MINUTE)<stime.get(Calendar.MINUTE)));
+        if (incrementDay) {
+            if (now.get(Calendar.HOUR_OF_DAY)>stime.get(Calendar.HOUR_OF_DAY) ||
+                    (now.get(Calendar.HOUR_OF_DAY)==stime.get(Calendar.HOUR_OF_DAY) && now.get(Calendar.MINUTE)>stime.get(Calendar.MINUTE))) {
+                etime.add(Calendar.DATE, 1);
+            } else {
+                // if current time is past the start time, decrement the start time instead.
+                stime.add(Calendar.DATE, -1);
+            }
+        }
+        Long nowMillis = now.getTimeInMillis();
+
+        return (nowMillis>stime.getTimeInMillis() && nowMillis<etime.getTimeInMillis());
+    }
+
+    public boolean getQuietTimeEnabled(){
+        return preferences.getBoolean("quietTimeEnabled", false);
+    }
+
+    public Long getQuietTimeStart(){
+        return preferences.getLong("quietTimeStart", 1474725600000L);
+    }
+
+    public Long getQuietTimeEnd(){
+        return preferences.getLong("quietTimeEnd", 1474747200000L);
+    }
+
+    public void setQuietTimeEnabled(boolean enabled){
+        preferences.edit().putBoolean("quietTimeEnabled", enabled).apply();
+    }
+
+    public void setQuietTimeStart(Long millis){
+        preferences.edit().putLong("quietTimeStart", millis).apply();
+    }
+
+    public void setQuietTimeEnd(Long millis){
+        preferences.edit().putLong("quietTimeEnd", millis).apply();
     }
 
     private void cancelAlarmIntent(String key){

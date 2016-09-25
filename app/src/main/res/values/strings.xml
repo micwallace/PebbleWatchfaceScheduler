@@ -50,6 +50,11 @@
     <string name="all_days">All Days</string>
     <string name="weekends">Weekends</string>
     <string name="weekdays" >Weekdays</string>
+    <string name="quiet_time">Quiet Time</string>
+    <string name="Settings">Settings</string>
+    <string name="turn_off_auto_rotate">Auto Rotate: Off</string>
+    <string name="turn_on_auto_rotate">Auto Rotate: On</string>
+    <string name="quiet_time_notice">Quiet time only applies to auto rotation.</string>
     <string-array name="time_units">
         <item>Minutes</item>
         <item>Hours</item>

@@ -37,42 +37,59 @@ public class ScheduleReceiver extends BroadcastReceiver {
         Manager manager = new Manager(context);
         String uuid = null;
         if (alarmKey.equals("0")){ // auto rotation schedule
-            Log.w("au.com.wallaceit", "Intent received for auto change, switching watchface");
-            JSONObject autoSchedule = manager.getAutoSchedule();
-            try {
-                int index;
-                if (manager.isAutoScheduleRandom()) {
-                    uuid = manager.getRandomUuidFromSelection();
-                    index = manager.getAutoScheduleUuidIndex(uuid);
-                } else {
-                    // move to the next watchface or go back to the first if at the end
-                    index = autoSchedule.getInt("curindex") + 1;
-                    JSONArray uuids = autoSchedule.getJSONArray("uuids");
-                    if (index >= uuids.length())
-                        index = 0;
-                    if (uuids.length() > 0) { // if no selected watchfaces, skip
-                        uuid = uuids.getString(index);
+            if (manager.isQuietTimeActive()) {
+                Log.w("au.com.wallaceit", "Intent received for auto change but quiet time is active, skipping");
+            } else {
+                Log.w("au.com.wallaceit", "Intent received for auto change, switching watchface");
+                JSONObject autoSchedule = manager.getAutoSchedule();
+                try {
+                    int index;
+                    if (manager.isAutoScheduleRandom()) {
+                        uuid = manager.getRandomUuidFromSelection();
+                        index = manager.getAutoScheduleUuidIndex(uuid);
+                    } else {
+                        // move to the next watchface or go back to the first if at the end
+                        index = autoSchedule.getInt("curindex") + 1;
+                        JSONArray uuids = autoSchedule.getJSONArray("uuids");
+                        if (index >= uuids.length())
+                            index = 0;
+                        if (uuids.length() > 0) { // if no selected watchfaces, skip
+                            uuid = uuids.getString(index);
+                        }
                     }
+                    manager.setAutoScheduleCurrentIndex(index);
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-                manager.setAutoScheduleCurrentIndex(index);
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
             // reschedule for the next interval
             manager.scheduleAutoAlarmIntent();
         } else {
             Log.w("au.com.wallaceit", "Intent received for schedule change, switching watchface");
             uuid = intent.getStringExtra("uuid");
-            // uuid of zero indicates random watchface
-            if (uuid.equals("0"))
-                uuid = manager.getRandomUuidFromSelection();
+
+            switch (uuid){
+                // uuid of zero indicates random watchface
+                case "0":
+                    uuid = manager.getRandomUuidFromSelection();
+                    break;
+                // special actions to enable and disable auto rotation
+                case "-1":
+                    manager.setAutoScheduleEnabled(true);
+                    uuid = null; // prevent
+                    break;
+                case "-2":
+                    manager.setAutoScheduleEnabled(false);
+                    uuid = null;
+                    break;
+            }
             // reschedule
             manager.rescheduleAlarm(intent.getStringExtra("key"));
         }
         // open watchface
-        if (uuid!=null)
+        if (uuid!=null) {
             manager.setPebbleWatchface(uuid);
-
-        manager.setLastChangeInfo(alarmKey.equals("0")?"auto":"scheduled", uuid==null?"null":uuid);
+            manager.setLastChangeInfo(alarmKey.equals("0") ? "auto" : "scheduled", uuid.equals("0") ? "Random" : uuid);
+        }
     }
 }

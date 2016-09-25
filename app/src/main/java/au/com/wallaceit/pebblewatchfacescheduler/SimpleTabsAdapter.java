@@ -57,6 +57,10 @@ class SimpleTabsAdapter extends PagerAdapter {
         return labels[position];
     }
 
+    public void destroyItem(ViewGroup container, int position, Object object) {
+
+    }
+
     @Override
     public boolean isViewFromObject(View arg0, Object arg1) {
         return arg0 == arg1;
