@@ -374,7 +374,7 @@ public class Manager {
         etime.set(Calendar.YEAR, now.get(Calendar.YEAR));
         etime.set(Calendar.MONTH, now.get(Calendar.MONTH));
         etime.set(Calendar.DATE, now.get(Calendar.DATE));
-        // if end time is less than start time then we need to increment date for a correct comparison,
+        // if end time is less than start time then we can tell the range crosses the date boundary, so need to increment date for a correct comparison
         boolean incrementDay = (etime.get(Calendar.HOUR_OF_DAY)<stime.get(Calendar.HOUR_OF_DAY) ||
                 (etime.get(Calendar.HOUR_OF_DAY)==stime.get(Calendar.HOUR_OF_DAY) && etime.get(Calendar.MINUTE)<stime.get(Calendar.MINUTE)));
         if (incrementDay) {
@@ -382,7 +382,7 @@ public class Manager {
                     (now.get(Calendar.HOUR_OF_DAY)==stime.get(Calendar.HOUR_OF_DAY) && now.get(Calendar.MINUTE)>stime.get(Calendar.MINUTE))) {
                 etime.add(Calendar.DATE, 1);
             } else {
-                // if current time is past the start time, decrement the start time instead.
+                // if current time is past the start time, decrement the start time instead, otherwise quiet time will never end
                 stime.add(Calendar.DATE, -1);
             }
         }
