@@ -367,7 +367,7 @@ public class Manager {
         stime.setTimeInMillis(getQuietTimeStart());
         Calendar etime = Calendar.getInstance();
         etime.setTimeInMillis(getQuietTimeEnd());
-
+        // set calendar objects to the same date, month and year
         stime.set(Calendar.YEAR, now.get(Calendar.YEAR));
         stime.set(Calendar.MONTH, now.get(Calendar.MONTH));
         stime.set(Calendar.DATE, now.get(Calendar.DATE));
@@ -386,8 +386,8 @@ public class Manager {
                 stime.add(Calendar.DATE, -1);
             }
         }
+        // We can now do a simple timestamp comparison to see whether the current time falls between that range
         Long nowMillis = now.getTimeInMillis();
-
         return (nowMillis>stime.getTimeInMillis() && nowMillis<etime.getTimeInMillis());
     }
 

@@ -115,7 +115,7 @@ public class MainActivity extends Activity {
         // setup views
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
         SimpleTabsAdapter pageAdapter = new SimpleTabsAdapter(
-                new String[]{resources.getString(R.string.watchfaces), resources.getString(R.string.schedule), getString(R.string.Settings)},
+                new String[]{resources.getString(R.string.watchfaces), resources.getString(R.string.schedule), getString(R.string.settings)},
                 new int[]{R.id.watchface_view, R.id.schedule_listview, R.id.settings_view},
                 MainActivity.this,
                 null

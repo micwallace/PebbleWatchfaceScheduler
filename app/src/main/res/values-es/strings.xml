@@ -56,4 +56,8 @@
     <string name="weekdays">Días de la semana</string>
     <string name="weekends">Fines de semana</string>
     <string name="import_email_error">No se pudo encontrar pebble.log.gz en el correo electrónico de soporte , intente abrir el archivo adjunto directamente.</string>
+    <string name="quiet_time">Tiempo de silencio</string>
+    <string name="quiet_time_notice">Prevenir la rotación automática entre estos tiempos.</string>
+    <string name="turn_off_auto_rotate">Auto Rotar: Apagado</string>
+    <string name="turn_on_auto_rotate">Auto Rotar: En</string>
 </resources>
