@@ -5,7 +5,7 @@
     <string name="delete">borrar</string>
     <string name="cancel">Cancelar</string>
     <string name="ok">SI</string>
-    <string name="action_settings"><![CDATA[Configuración]]></string>
+    <string name="settings"><![CDATA[Configuración]]></string>
     <string name="watchface_name">Nombre</string>
     <string name="watchface_uuid">App UUID</string>
     <string name="auto_rotate">Auto Rotar</string>
